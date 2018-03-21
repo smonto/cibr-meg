@@ -20,7 +20,7 @@ pos_files=glob.glob('*.pos')
 HP=np.array([]).reshape(0,3) # for storing the (x,y,z) of head origin
 #net_trans=np.array([]).reshape(0,3) # for storing the device->head translations
 #net_rot=np.zeros((0,3,3)) # for storing the device->head rotations
-mean_pos=np.zeros(0,10) # for storing the mean transformation
+mean_pos=np.zeros((0,10)) # for storing the mean transformation
 
 for pos_file in pos_files:
     pos=mne.chpi.read_head_pos(pos_file) # load head positions from ASCII file
