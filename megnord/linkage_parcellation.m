@@ -6,7 +6,7 @@ function [ROI, SS]=linkage_parcellation(forw_file, inv_file, nROI, SSs)
 %           - inverse operator file name
 %           - nROI, number of resulting parcels
 %           - SSs, options for constructing the parcellation (+weights?)
-%           - 
+%           -
 %
 % Returns   - ROI: a struct including source nodes belonging to each parcel
 %           - path where the FreeSurfer-format parcellation is saved
@@ -16,9 +16,11 @@ function [ROI, SS]=linkage_parcellation(forw_file, inv_file, nROI, SSs)
 %   (6) source correlation profiles
 
 %% TODO:
-% write annotations
+% write annotations and/or labels
 % save pre-computed distances
-% gather all non-mne (+Fieldtrip?) functions
+% gather all non-mne (+Fieldtrip?) functions together
+% visualization?
+% morphing?
 
 % percentiles for discarding invisible sources based on forward solution by sensor type
 gradlim=0;
@@ -37,7 +39,7 @@ catch me
 end
 
 if ~isnumeric(SSs)
-    disp("Parcellation method needs to be of numbers!")
+    disp('Parcellation method needs to be of numbers!')
     return
 end
 disp(['Linkage method: ' int2str(SSs)]);
