@@ -14,15 +14,20 @@ function [ROI, SS]=linkage_parcellation(forw_file, inv_file, nROI, SSs)
 % OPTIONS "SSs"
 %   (1) Forward solution only (3) distance (4) source correlation (5) FreeSurfer-limitation
 %   (6) source correlation profiles
+%
+% NOTES
+% needs fixed-orientation solutions -- free orientations possible in future
 
 %% TODO:
 % write annotations and/or labels
+% pruning of sources
 % save pre-computed distances
 % gather all non-mne (+Fieldtrip?) functions together
 % visualization?
 % morphing?
 
-% percentiles for discarding invisible sources based on forward solution by sensor type
+% percentiles for discarding invisible sources based on forward solution
+% discard if not visible by any sensor type set here
 gradlim=0;
 maglim=0;
 eeglim=0;
@@ -36,6 +41,13 @@ catch me
     M=[];
     disp('No inverse solution file found.');
     disp('Inverse solution not loaded, only SS=1 in use.')
+end
+
+% match channel selectors in the operators:
+if length(F.sol.row_names)>length(I.noise_cov.names)
+    Fsel=fiff_pick_channels(F.sol.row_names, I.noise_cov.names, []);
+%elseif length(F.sol.row_names)<length(I.noise_cov.names)
+%    Isel=fiff_pick_channels(I.noise_cov.names, F.sol.row_names, []);
 end
 
 if ~isnumeric(SSs)
@@ -59,7 +71,7 @@ IndepHemi=1; % 0 == dependent
 % Compute signal space angles, if wanted:
 if any(SSs==1)
 disp('Computing signal space angles...');
-FD=F.sol.data;
+FD=F.sol.data(Fsel,:);
 SS1=zeros(sF);
 nFD=zeros(sF,1); % pre-compute signal space vector norms
 nFD(1)=norm(FD(:,1));
@@ -95,7 +107,7 @@ else
 SS1=1;
 end
 
-SS2=1; % for future
+SS2=1; % saved for future
 
 % Add distance weighting by computing inter-source cortical distances and
 % weighting the clustering by it (inter-hemispheric=Inf?), if wanted:
@@ -113,11 +125,11 @@ end
 
 if any(SSs==4) % compute source-to-source artificial correlations
     [MD,~]=get_inverse_sol(M,0);
-    try
-        L=MD*F.sol.data; % point spread matrix
-    catch mult_error
-        L=MD*F.sol.data(1:360,:); % point spread matrix
-    end
+    %try
+        L=MD*F.sol.data(Fsel,:); % point spread matrix
+    %catch mult_error
+    %   L=MD*F.sol.data(1:360,:); % point spread matrix
+    %end
     SS4=L*L'; % source covariance
     S=inv(sqrt(diag(diag(SS4)))); % for turning cov to correlation
     SS4=S*SS4*S; % source-to-source correlation matrix
@@ -133,7 +145,7 @@ end
 % NOTE: Also exclude nodes that are not present in this parcellation!
 if any(SSs==5)
     % template parcellation file name
-    templateROI='aparc' %.a2009s'
+    templateROI='aparc' %.a2009s'; 'StrictlyLobes'
     try
         tmpROI=FS_parcellation_to_ROI(templateROI);
     catch ME
@@ -196,13 +208,15 @@ end
 %% NEEDS RE-WRITING!
 % prune out those sources that are not well visible using forward solution
 invisible_ind=[];
-if maglim>0 % for magnetometers
-    FD=sum(abs(F.sol.data(match_str(ft_channelselection('MEGMAG',metadata.ch_names),metadata.ch_names),:)),1);
+if maglim>0 % check for magnetometers
+    magind=regexp(F.sol.row_names,'MEG...1','forcecelloutput');
+    FD=sum(abs(F.sol.data(not(cellfun('isempty', magind)),:)),1);
     maglim=prctile(FD,maglim);
     invisible_ind=find(FD<maglim);
 end
-if gradlim>0 % for gradiometers
-    FD=sum(abs(F.sol.data(match_str(ft_channelselection('MEGGRAD',metadata.ch_names),metadata.ch_names),:)),1);
+if gradlim>0 % check for gradiometers
+    gradind=regexp(F.sol.row_names,'MEG...[2,3]','forcecelloutput');
+    FD=sum(abs(F.sol.data(not(cellfun('isempty', gradind)),:)),1);
     gradlim=prctile(FD,gradlim);
     prune_grad=find(FD<gradlim);
     if exist('invisible_ind','var')
@@ -211,8 +225,9 @@ if gradlim>0 % for gradiometers
         invisible_ind=prune_grad;
     end
 end
-if eeglim>0 % for electrodes
-    FD=sum(abs(F.sol.data(match_str(ft_channelselection('EEG',metadata.ch_names),metadata.ch_names),:)),1);
+if eeglim>0 % check for electrodes
+    eegind=regexp(F.sol.row_names,'EEG','forcecelloutput');
+    FD=sum(abs(F.sol.data(not(cellfun('isempty', eegind)),:)),1);
     eeglim=prctile(FD,eeglim);
     prune_eeg=find(FD<eeglim);
     if exist('invisible_ind','var')
@@ -226,7 +241,8 @@ src_inc=setdiff(src_inc,invisible_ind);
 %%
 SS=SS(src_inc,src_inc); % parcellate only sources that are in the used template
                         % AND have a reasonable forward solution
-
+%SS(1:10,1:10)
+%imagesc(SS)
 % Do linkage clustering on dissimilarities SS (complete=furthest distance)
 disp('Computing the linkage...');
 Z=linkage(squareform(SS), 'complete');
@@ -257,21 +273,27 @@ ROI.in_template=src_inc;
 ROI.in_template_name=templateROI;
 if exist('tmpROI','var')
     for rr=1:length(ROI.ROIs)
+        ROI.labels{rr}=['ROI' int2str(rr)];
         for tt_ind=1:length(tmpROI.ROIs)
             if ~isempty(intersect(tmpROI.ROIs{tt_ind},ROI.ROIs{rr}))
                 ROI.template_label{rr}=tmpROI.labels{tt_ind};
+                ROI.labels{rr}=[ROI.labels{rr} '_' tmpROI.labels{tt_ind}];
             end
         end
-        sz(rr)=length(ROI.ROIs{rr});
+        ROI.sizes(rr)=length(ROI.ROIs{rr});
     end
-else
-    sz=0;
 end
-ROI.sizes=sz;
+ROI.name=['ROI_' ROI.method];
 %save(['ROI_' int2str(ROI.nROI) '_' ROI.method],'ROI');
 disp('Clustering parcellation completed!');
 % Visualization
+disp('Visualizing the linkage dendrogram ...');
 dendrogram(Z,300, 'ColorThreshold',Z(size(Z,1)-ROI.nROI+1,3)); % color the clustering tree
 % draw ROIs?
 % save label files or .annot file?
+disp('Writing annotation file...');
+save_ROI_annotation(ROI)
+disp('Done.');
+save(ROI.name ,'ROI');
+disp(['Parcellation saved as ' ROI.name]);
 end
