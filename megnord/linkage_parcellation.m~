@@ -30,7 +30,7 @@ function [ROI, SS]=linkage_parcellation(forw_file, inv_file, nROI, SSs)
 % percentiles for discarding invisible sources based on forward solution
 % discard if not visible by any sensor type set here
 gradlim=0;
-maglim=0;
+maglim=10;
 eeglim=0;
 
 % load forward and inverse operators
@@ -144,7 +144,6 @@ if any(SSs==5)
     try
         tmpROI=FS_parcellation_to_ROI(templateROI);
     catch ME
-        disp('Template ROI not loaded!')
         tmpROI.ROIs={1:10^4};
         tmpROI.labels{1}='tmpROI';
         tmpROI.nROI=1;
@@ -232,17 +231,13 @@ if eeglim>0 % check for electrodes
         invisible_ind=prune_eeg;
     end
 end
-if exist('invisible_ind','var')
-    if ~isempty(invisible_ind)
-        disp(['Pruned ' int2str(length(invisible_ind)) ' invisible sources.']);
-        src_inc=setdiff(src_inc,invisible_ind);
-    end
-end
+disp(['Pruned ' int2str(length(invisible_ind)) ' invisible sources.']);
+src_inc=setdiff(src_inc,invisible_ind);
 %%
 SS=SS(src_inc,src_inc); % parcellate only sources that are in the used template
                         % and have a reasonable forward solution
-%figure
-%imagesc(SS)
+figure
+imagesc(SS)
 % Do linkage clustering on dissimilarities SS (complete=furthest distance)
 disp('Computing the linkage...');
 Z=linkage(squareform(SS), 'complete');
@@ -271,9 +266,9 @@ ROI.surf_ids={[int2str(F.src(1).id) ':' int2str(F.src(1).np)];
 ROI.n_sources=[F.src(1).nuse;F.src(2).nuse];
 ROI.in_template=src_inc;
 ROI.in_template_name=templateROI;
+if exist('tmpROI','var')
     for rr=1:length(ROI.ROIs)
         ROI.labels{rr}=['ROI' int2str(rr)];
-        if exist('tmpROI','var')
         for tt_ind=1:length(tmpROI.ROIs)
             if ~isempty(intersect(tmpROI.ROIs{tt_ind},ROI.ROIs{rr}))
                 ROI.template_label{rr}=tmpROI.labels{tt_ind};
@@ -289,11 +284,11 @@ disp('Clustering parcellation completed!');
 % Visualization
 disp('Visualizing the linkage dendrogram ...');
 figure
-dendrogram(Z,100, 'ColorThreshold',Z(size(Z,1)-ROI.nROI+1,3)); % color the clustering tree
+dendrogram(Z,300, 'ColorThreshold',Z(size(Z,1)-ROI.nROI+1,3)); % color the clustering tree
 % draw ROIs?
 % save label files or .annot file?
 disp('Writing annotation file...');
-save_ROI_annotation(ROI);
+save_ROI_annotation(ROI)
 disp('Done.');
 save(ROI.name ,'ROI');
 disp(['Parcellation saved as ' ROI.name]);
