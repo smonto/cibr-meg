@@ -1,0 +1,12 @@
+How to create model-based sets of cortical ROIs?
+
+You need:
+ - these Matlab functions
+ - MNE-C and MNE-Matlab tools (M. Hämäläinen et al.)
+ - prepared forward and inverse operators in FIFF-format
+ 
+Basically, you only need to run the linkage_parcellation.m function. Asking "help" from Matlab will reveal the parameters you need.
+You can tweak some additional parameters by editing some definitions in the function:
+ - set the FreeSurfer directory (FS_dir) if not defined by $SUBJECTS_DIR
+ - set the FreeSurfer anatomical parcellation, which can be used to confine ROIs
+ - discard invisible sources based on forward model (separately for sensor types: maglim, gradlim, eeglim)
