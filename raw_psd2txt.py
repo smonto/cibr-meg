@@ -52,8 +52,8 @@ Raw_A.pick_channels(sel)
 Raw_B.pick_types(meg=meg)
 Raw_A.pick_types(meg=meg)
 
-fsA=Raw_A.info['sfreq']
-fsB=Raw_B.info['sfreq']
+fsA=int(Raw_A.info['sfreq'])
+fsB=int(Raw_B.info['sfreq'])
 psd_B, freqs = tf.psd_welch(Raw_B, tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, proj=False, n_fft=4*fsB, n_overlap=2*fsB)
 psd_A, freqs = tf.psd_welch(Raw_A, tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, proj=False, n_fft=4*fsA, n_overlap=2*fsA)
 
