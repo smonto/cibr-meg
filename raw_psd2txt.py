@@ -27,7 +27,7 @@ meg='grad' # 'mag' or 'grad' -- use MAG or GRAD sensors
 ch_selection=['Left-occipital', 'Right-occipital'] # or Left-parietal, Right-parietal, etc. -- select the region of interest
 
 import matplotlib
-matplotlib.use('tkagg')
+matplotlib.use('qt4agg')
 from mne import pick_channels
 from mne import read_selection
 from mne import pick_channels
