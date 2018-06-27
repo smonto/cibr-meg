@@ -60,7 +60,7 @@ psd_A, freqs = tf.psd_welch(Raw_A, tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, p
 mpsd_B=np.mean(psd_B, axis=0)
 mpsd_A=np.mean(psd_A, axis=0)
 
-plt.plot(freqs, mpsd_B, freqs, mpsd_A, show=False)
+plt.plot(freqs, mpsd_B, freqs, mpsd_A)
 plt.legend(('before' ,'after'))
 plt.xlabel('Frequency')
 plt.show()
