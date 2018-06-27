@@ -37,6 +37,7 @@ import mne.io as io
 import sys
 import numpy as np
 import os.path as pth
+plt.ioff()
 
 fname_B=sys.argv[1]
 fname_A=sys.argv[2]
@@ -51,13 +52,15 @@ Raw_A.pick_channels(sel)
 Raw_B.pick_types(meg=meg)
 Raw_A.pick_types(meg=meg)
 
-psd_B, freqs = tf.psd_welch(Raw_B, tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, proj=False, n_fft=1000, n_overlap=500)
-psd_A, freqs = tf.psd_welch(Raw_A, tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, proj=False, n_fft=1000, n_overlap=500)
+fsA=Raw_A.info['sfreq']
+fsB=Raw_B.info['sfreq']
+psd_B, freqs = tf.psd_welch(Raw_B, tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, proj=False, n_fft=4*fsB, n_overlap=2*fsB)
+psd_A, freqs = tf.psd_welch(Raw_A, tmin=tmin, tmax=tmax, fmin=fmin, fmax=fmax, proj=False, n_fft=4*fsA, n_overlap=2*fsA)
 
 mpsd_B=np.mean(psd_B, axis=0)
 mpsd_A=np.mean(psd_A, axis=0)
 
-plt.plot(freqs, mpsd_B, freqs, mpsd_A)
+plt.plot(freqs, mpsd_B, freqs, mpsd_A, show=False)
 plt.legend(('before' ,'after'))
 plt.xlabel('Frequency')
 plt.show()
