@@ -62,7 +62,7 @@ plt.legend(('before' ,'after'))
 plt.xlabel('Frequency')
 plt.show()
 
-if save_txts
+if save_txts:
     np.savetxt('psd_ceameg.txt', (mpsd_B.T, mpsd_A.T, freqs.T))
     np.savetxt('ch_psds_' + pth.basename(sys.argv[1]) + '_bef.txt',psd_B.T)
     np.savetxt('ch_psds_' + pth.basename(sys.argv[2]) + '_aft.txt',psd_A.T)
