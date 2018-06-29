@@ -24,7 +24,7 @@ tmax=None # end time reading file
 fmin=5 # lowest frequency in spectrum
 fmax=30 # highest frequency in spectrum
 meg='grad' # 'mag' or 'grad' -- use MAG or GRAD sensors
-ch_selection=['Left-occipital', 'Right-occipital'] # or Left-parietal, Right-parietal, etc. -- select the region of interest
+ch_selection=['Left-frontal'] # 'Right-occipital' or Left-parietal, Right-parietal, etc. -- select the region of interest
 
 import matplotlib
 matplotlib.use('qt4agg')
