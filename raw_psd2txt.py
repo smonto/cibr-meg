@@ -5,7 +5,7 @@ Takes paths to data files as arguments:
 1) file before treatment
 2) file after treatment
 
-Saves the PSDs as psd_ceameg.txt, where rows are:
+Saves the PSDs as psd_from_fif.txt, where rows are:
 1. mean amplitude spectrum over channels before
 2. mean amplitude spectrum over channels after
 3. the frequencies
@@ -21,8 +21,8 @@ sipemont 180401
 save_txts=False;
 tmin=0 # begin time reading file
 tmax=None # end time reading file
-fmin=5 # lowest frequency in spectrum
-fmax=30 # highest frequency in spectrum
+fmin=3 # lowest frequency in spectrum
+fmax=50 # highest frequency in spectrum
 meg='grad' # 'mag' or 'grad' -- use MAG or GRAD sensors
 ch_selection=['Left-frontal'] # 'Right-occipital' or Left-parietal, Right-parietal, etc. -- select the region of interest
 
@@ -66,6 +66,6 @@ plt.xlabel('Frequency')
 plt.show()
 
 if save_txts:
-    np.savetxt('psd_ceameg.txt', (mpsd_B.T, mpsd_A.T, freqs.T))
+    np.savetxt('psd_from_fif.txt', (mpsd_B.T, mpsd_A.T, freqs.T))
     np.savetxt('ch_psds_' + pth.basename(sys.argv[1]) + '_bef.txt',psd_B.T)
     np.savetxt('ch_psds_' + pth.basename(sys.argv[2]) + '_aft.txt',psd_A.T)
