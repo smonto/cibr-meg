@@ -16,8 +16,8 @@ import mne
 stream_name = 'NIC'
 sfreq = 500.0
 chan = 1 # EEG channel of choice
-l_freq = 45 # lowest frequency of interest
-h_freq = 55 # highest frequency of interest
+l_freq = 8 # lowest frequency of interest
+h_freq = 12 # highest frequency of interest
 # get stream
 streams = resolve_stream('type', 'EEG')
 inlet = [StreamInlet(stream) for stream in streams
@@ -29,8 +29,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 
 # set up sound system
-audio_sfreq = 22050.0
-sinefreq = 440
+audio_sfreq = 22050.0 # correct? where taken from?
+sinefreq = 1000 # was 440
 amplitude = 0.0
 current_idx = 0
 
@@ -42,7 +42,7 @@ def callback(output_data, length, *args):
     current_idx += length
 
 
-# creat info for raw array
+# create info for raw array
 info = mne.create_info(['EEG 00' + str(idx+1) for idx in range(8)],
                        sfreq, ch_types='eeg')
 
@@ -76,7 +76,11 @@ with sd.OutputStream(samplerate=audio_sfreq, channels=chan, callback=callback) a
         # and update the amplitude
         freq_idxs = np.where((freqs > l_freq) & (freqs < h_freq))[0]
         normalization = np.mean(psds[0])
-        amplitude = 0.1*(np.mean(psds[0][freq_idxs]) / normalization)
+        # set up a baseline without output to find normalization
+        if current_idx < 5*audio_sfreq/2:
+            amplitude = 0
+        else:
+            amplitude = 0.1*(np.mean(psds[0][freq_idxs]) / normalization)
 
         # have animation and sound refresh at some rate
         plt.pause(0.5)
