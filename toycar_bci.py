@@ -34,6 +34,13 @@ sinefreq = 1000 # was 440
 amplitude = 0.0
 current_idx = 0
 
+# set up normalization
+ul=0.8 # smallest output V
+uh=0.22 # highest output V
+nl=1 # lower normalization factor
+nu=1 # higher normalization factor
+zu=[] # store baseline values
+
 def callback(output_data, length, *args):
     global current_idx
     x = np.arange(current_idx, current_idx + length)
@@ -41,20 +48,19 @@ def callback(output_data, length, *args):
     output_data[:] = amplitude*sinewave[:, np.newaxis]
     current_idx += length
 
-
 # create info for raw array
 info = mne.create_info(['EEG 00' + str(idx+1) for idx in range(8)],
                        sfreq, ch_types='eeg')
 
 # and with sound playing start the work
-with sd.OutputStream(samplerate=audio_sfreq, channels=chan, callback=callback) as os:
+with sd.OutputStream(samplerate=audio_sfreq, channels=1, callback=callback) as os:
 
     while True:
 
         # get data from nic
         data, timestamps = inlet.pull_chunk()
 
-        print "Number of samples: " + str(len(data))
+        #print "Number of samples: " + str(len(data))
 
         # if no data, wait for nic a bit
         if len(data) < 1:
@@ -67,20 +73,28 @@ with sd.OutputStream(samplerate=audio_sfreq, channels=chan, callback=callback) a
         raw = mne.io.RawArray(np.array(data).T, info)
 
         # get spectrum with welch method
-        psds, freqs = mne.time_frequency.psd_welch(raw, fmin=4, fmax=45, n_fft=256)
+        psds, freqs = mne.time_frequency.psd_welch(raw.pick_channels(
+                        [info['ch_names'][chan-1]]), fmin=3, fmax=30, n_fft=256)
 
-        # plot things
+        # plot PSD
         ax.cla()
         ax.plot(freqs, psds[0])
 
-        # and update the amplitude
+        # update the amplitude
         freq_idxs = np.where((freqs > l_freq) & (freqs < h_freq))[0]
-        normalization = np.mean(psds[0])
-        # set up a baseline without output to find normalization
-        if current_idx < 5*audio_sfreq/2:
-            amplitude = 0
-        else:
-            amplitude = 0.1*(np.mean(psds[0][freq_idxs]) / normalization)
+        pow = np.sqrt(np.mean(psds[0][freq_idxs]))
+        # normalization = np.mean(psds[0]) # whole spectrum mean
 
-        # have animation and sound refresh at some rate
+        # set up a baseline (with no output) to find initial normalization
+        if current_idx < 5*audio_sfreq:
+            amplitude = 0
+            zu.append(pow)
+            nl=min(zu)
+            nu=max(zu)
+        else: # after baseline, start scaling output
+            nu=max(pow,nu)
+            nl=min(pow,nl)
+            amplitude = (pow-nl)/(nu-nl)*(uh/ul-1)+1 / normalization
+
+        # have plot and output amplitude refresh at a suitable rate
         plt.pause(0.5)
