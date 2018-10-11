@@ -1,0 +1,9 @@
+Roadmap for python implementation
+
+-use only single HS: Label class
+     .smooth
+     .fill
+     .save?
+- compute morph matrix for group analyses, morph data (precomputed)
+- read labels from annot
+- write labels (to annot?)
