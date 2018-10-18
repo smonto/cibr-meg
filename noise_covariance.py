@@ -13,10 +13,10 @@ import mne
 
 Raw=mne.io.read_raw_fif(fname, preload=True);
 
-reject_ncm=dict(grad=4000e-13, # T / m (gradiometers)
+reject_ncm=dict(grad=4e-10, # T / m (gradiometers)
               mag=4e-12, # T (magnetometers)
-              eeg=40e-6, # V (EEG channels)
-              eog=250e-6 # V (EOG channels)
+              eeg=4e-5, # V (EEG channels)
+              eog=200e-6 # V (EOG channels)
               )
 
 Events=mne.find_events
