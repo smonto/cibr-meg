@@ -1,13 +1,10 @@
 # small script for combining and writing fif-files
 # usage: "python combine_fifs.py <combined-filename> <original-1_filename> [<original-2_filename> ...]"
 # to guarantee FIFF size < 2GB, data are simply downsampled by the number of files
-#
-# simo monto & erkka heinilä, JYU 2018
-
 import sys
 import mne
 from argparse import ArgumentParser
-# parse file names
+#parse file names
 parser = ArgumentParser()
 parser.add_argument("combined_fname",nargs=1)
 parser.add_argument("orig_fnames",nargs="+")
