@@ -23,7 +23,7 @@ for fname in args.orig_fnames:
     if not raw_tmp.info['sfreq'] == combined_raw[0].info['sfreq']:
         print('Sampling frequency in ' + fname + ' mismatches with ' + arg.orig_fnames[0])
         return;
-    print('adding ' + fname  + ' to combined raw ' combined_fname)
+    print('adding ' + fname  + ' to combined raw ' + combined_fname)
 
 # find new sampling frequency
 sfreq = combined_raw[0].info['sfreq'] / len(args.orig_fnames)
