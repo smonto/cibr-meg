@@ -22,7 +22,7 @@ for fname in args.orig_fname:
     if not raw_tmp.info['sfreq'] == combined_raw[0].info['sfreq']:
         sys.exit('Sampling frequency in ' + fname + ' mismatches with ' + arg.orig_fname[0])
     else:
-        print('adding ' + fname  + ' to combined raw ' + combined_fname)
+        print('adding ' + fname  + ' to combined raw ' + args.combined_fname[0])
 
 # find new sampling frequency
 sfreq = combined_raw[0].info['sfreq'] / len(args.orig_fname)
@@ -34,4 +34,4 @@ for raw_tmp, idx in enumerate(combined_raw):
 
 combined_raw = mne.concatenate_raws(combined_raw, verbose=True)
 #mne.Annotations.delete here? To un-skip the bad-marked file boundaries in data
-combined_raw.save(args.combined_fname)
+combined_raw.save(args.combined_fname[0])
