@@ -4,6 +4,9 @@
 import sys
 import mne
 from argparse import ArgumentParser
+import warnings
+
+warnings.filterwarnings('ignore', 'FutureWarning')
 #parse file names
 parser = ArgumentParser()
 parser.add_argument("combined_fname",nargs=1)
