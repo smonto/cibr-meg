@@ -8,6 +8,7 @@ from sys import exit as sysexit
 from mne import concatenate_raws
 from mne.io import read_raw_fif
 from argparse import ArgumentParser
+import warnings
 
 # parse file names
 parser = ArgumentParser()
@@ -35,7 +36,9 @@ if args.sfreq==0:
     args.sfreq=combined_raw[0].info['sfreq']
 for idx, raw_tmp in enumerate(combined_raw):
     combined_raw[idx].load_data()
-    combined_raw[idx].resample(sfreq=args.sfreq, npad='auto', stim_picks=None, n_jobs=4)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=FutureWarning)
+        combined_raw[idx].resample(sfreq=args.sfreq, npad='auto', stim_picks=None, n_jobs=4)
 
 combined_raw = concatenate_raws(combined_raw, verbose=True)
 #mne.Annotations.delete here? To un-skip the bad-marked file boundaries in data
