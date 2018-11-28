@@ -21,7 +21,7 @@ for fname in args.orig_fnames:
         sys.exit('Channel names in ' + fname + ' mismatch with ' + arg.orig_fnames[0])
     if not raw_tmp.info['sfreq'] == combined_raw[0].info['sfreq']:
         sys.exit('Sampling frequency in ' + fname + ' mismatches with ' + arg.orig_fnames[0])
-    elif:
+    else:
         print('adding ' + fname  + ' to combined raw ' + combined_fname)
 
 # find new sampling frequency
