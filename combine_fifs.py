@@ -28,7 +28,7 @@ for fname in args.orig_fname:
 sfreq = combined_raw[0].info['sfreq'] / len(args.orig_fname)
 
 # load data and resample
-for raw_tmp, idx in enumerate(combined_raw):
+for idx, raw_tmp in enumerate(combined_raw):
     combined_raw[idx].load_data()
     combined_raw[idx].resample(sfreq=sfreq, npad='auto', stim_picks=None, n_jobs=4)
 
