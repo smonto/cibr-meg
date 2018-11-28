@@ -7,7 +7,6 @@
 import sys
 import mne
 from argparse import ArgumentParser
-
 # parse file names
 parser = ArgumentParser()
 parser.add_argument("combined_fname",nargs=1)
