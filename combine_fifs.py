@@ -1,6 +1,9 @@
 # small script for combining and writing fif-files
-# usage: "python combine_fifs.py new_sampling_freq <combined_filename>  <original-1_filename> [<original-2_filename> ...]"
-# please resample to guarantee FIFF size < 2GB
+# usage: "python combine_fifs.py <combined_filename>  <original-1_filename> [<original-2_filename> ...] [--fs new_sampling_freq]"
+# resampling (option --fs) often needed to guarantee FIFF file size < 2GB limit
+#
+# simo.p.monto & erkka.heinila at jyu.fi
+
 from sys import exit as sysexit
 from mne import concatenate_raws
 from mne.io import read_raw_fif
@@ -14,9 +17,9 @@ parser.add_argument("--fs", default=0, dest='sfreq', help="new sampling frequenc
 args = parser.parse_args()
 print("Combined filename: %s" % args.combined_fname[0])
 print("Original filenames: %s" % args.orig_fname)
-combined_raw = list()
 
-# check infos match (channels)
+# check infos match (channels) and append
+combined_raw = list()
 for fname in args.orig_fname:
     raw_tmp = read_raw_fif(fname, preload=False, verbose=False)
     combined_raw.append(raw_tmp)
@@ -36,10 +39,12 @@ for idx, raw_tmp in enumerate(combined_raw):
 
 combined_raw = concatenate_raws(combined_raw, verbose=True)
 #mne.Annotations.delete here? To un-skip the bad-marked file boundaries in data
+
+# write to file
 try:
     combined_raw.save(args.combined_fname[0])
 except IOError:
-    sysexit('FIFF file write error -- check file sizes and re-sampling frequency to stay < 2 GB limit and make sure file does not exist.')
+    sysexit('FIFF file write error -- check file sizes and re-sampling for < 2 GB limit, and make sure file does not exist yet.')
 except:
     sysexit('Unknown error.')
 print('File combination completed!')
