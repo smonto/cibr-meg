@@ -1,10 +1,13 @@
 #! /bin/bash
 
+# NOTE: edit the line starting with file_list to specify which files are searched for and used here
+# NOTE: copies the found median file to ./scripts/med.fif -- edit the last line to change
+
 ## Stage 1: Find the reference head position
 echo ""
 echo "Find middle head position ..."
 # Find the files of interest
-file_list=($(find ./orig/ -name "*audlex*.fif"))
+file_list=($(find ./orig/ -name "*_raw.fif"))
 echo "Found these files:"
 printf '%s\n' "${file_list[@]}"
 # Read xyz coordinates to lists from each file
