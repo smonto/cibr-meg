@@ -67,7 +67,7 @@ for pos_file in pos_files:
     HP=np.concatenate((HP,hp),axis=0)
 
 plt.figure()
-plt.title('Head movement over all files (in mm)')
+plt.title('Head movement over all files (in mm in x, y, z)')
 for subplt in range(3):
     plt.subplot(3,1,subplt+1)
     plt.plot(1000*HP[:,subplt])
