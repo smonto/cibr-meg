@@ -1,4 +1,6 @@
 # raw_to_evoked
+# simple utility to plot_joint from file name
+# ToDo: give file as argument
 
 raw_file='finger_elec_gnd_1.fif'
 event_id=1
