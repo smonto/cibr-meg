@@ -34,11 +34,11 @@ picks_meg = mne.pick_types(raw.info, meg=True, eeg=False, eog=False,
 reject_ica={'mag': 6e-12, 'grad': 5e-10}
 
 ica = ICA(n_components=n_ica_comp, method='fastica')
-ica.fit(raw, picks=picks_meg, decim=3, reject=reject_ica, verbose=True)
+ica.fit(raw, picks=picks_meg, decim=5, reject=reject_ica, verbose=True)
 
 fig=ica.plot_components(picks=None, colorbar=True, image_interp='bilinear', inst=raw, show=False)
 ica.plot_sources(raw, show=False)
-print('Click on the Component time series plot to remove that component')
+print('Click on a Component to remove that component')
 plt.show(block=True)
 
 # Remove components, reconstruct and save the cleaned raw data
@@ -50,6 +50,6 @@ ica.apply(raw)
 print('ICA applied (%s components removed)' %ica.exclude)
 
 pth,_=path.splitext(raw_fname)
-raw.save(pth + '_ICA.fif', overwrite=True)
+raw.save(pth + '-ICA.fif', overwrite=True)
 
 #ica.plot_overlay(raw)
