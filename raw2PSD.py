@@ -33,5 +33,5 @@ for ch_set in ch_sets:
     Raw.plot_psd(fmin=fmin, fmax=fmax, n_fft=n_fft, ax=ax,
                  proj=False, picks=picks, area_mode='std',
                  show=False, average=True)
-plt.show(block=False)
+plt.show()
 print("Mission completed!")
