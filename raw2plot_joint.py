@@ -1,6 +1,7 @@
 # raw_to_evoked
 # simple utility to plot_joint from file name
-# ToDo: give file as argument
+
+import sys
 
 raw_file=sys.argv[1]
 event_id=1
