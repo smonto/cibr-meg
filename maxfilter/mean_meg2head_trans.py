@@ -56,6 +56,7 @@ net_trans=np.zeros((0,3)) # for storing the device->head translations
 net_rot=np.zeros((0,3,3)) # for storing the device->head rotations
 
 for pos_file in pos_files:
+    print("File: " + pos_file)
     quats=mne.chpi.read_head_pos(pos_file) # load head positions from ASCII file
     trans, rot, t = mne.chpi.head_pos_to_trans_rot_t(quats) # convert quaternions
     net_trans=np.concatenate((net_trans,trans),axis=0) # add movement in this file
