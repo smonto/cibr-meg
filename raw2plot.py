@@ -5,8 +5,10 @@ import sys
 import mne
 
 raw_file=sys.argv[1]
-ch_type=sys.argv[2]
+sfreq=sys.argv[2]
+ch_type=sys.argv[3]
 
 Raw=mne.io.read_raw_fif(raw_file, preload=True)
+Raw.resample(sfreq)
 Raw.pick_types(Raw.info, ch_type=True)
 Raw.plot()
