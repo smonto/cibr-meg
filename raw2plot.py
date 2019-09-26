@@ -14,7 +14,7 @@ print(len(sys.argv[3]))
 kwargs=dict()
 for kw in sys.argv[3:]:
 #    kwargs={sys.argv[3]:True}
-    kwargs=kwargs.update({kw:True})
+    kwargs.update({kw:True})
 
 Raw=mne.io.read_raw_fif(raw_file, preload=True)
 Raw.resample(sfreq)
