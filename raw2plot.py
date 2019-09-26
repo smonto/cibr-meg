@@ -1,6 +1,5 @@
 # raw data plot
 # simple utility to plot raw file from file name
-
 import sys
 import mne
 
@@ -12,7 +11,10 @@ print(type(sys.argv[3]))
 print(len(sys.argv))
 print(len(sys.argv[3]))
 
-kwargs={sys.argv[3]):True}
+kwargs=dict()
+for kw in sys.argv[3:]:
+#    kwargs={sys.argv[3]:True}
+    kwargs=kwargs.update({kw:True})
 
 Raw=mne.io.read_raw_fif(raw_file, preload=True)
 Raw.resample(sfreq)
