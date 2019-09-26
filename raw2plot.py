@@ -20,4 +20,3 @@ Raw=mne.io.read_raw_fif(raw_file, preload=True)
 Raw.resample(sfreq)
 Raw.pick_types(Raw.info, **kwargs)
 Raw.plot()
-# end
