@@ -12,7 +12,7 @@ print(type(sys.argv[3]))
 print(len(sys.argv))
 print(len(sys.argv[3]))
 
-kwargs={sys.argv[3]):True}
+kwargs={sys.argv[3]:True}
 
 Raw=mne.io.read_raw_fif(raw_file, preload=True)
 Raw.resample(sfreq)
