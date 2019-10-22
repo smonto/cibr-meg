@@ -7,7 +7,7 @@
 
 id="elpis15"
 project="elpis"
-file_list=($(find /projects/${project}/testmf/ -name "*${id}*.fif"))
+file_list=($(find /projects/${project}/testmf/ -iname "*${id}*.fif"))
 
 # STEP1: run maxfilter -headpos to get .pos files
 for RAWFILE in ${file_list[@]}
