@@ -5,9 +5,9 @@
 # NOTE! replace "id" and "project" with correct names!
 # NOTE! edit the MaxFilter command according to need
 
-id="01"
-project="meg"
-file_list=($(find /projects/${project}/orig/ -name "*${id}*.fif"))
+id="elpis15"
+project="elpis"
+file_list=($(find /projects/${project}/testmf/ -name "*${id}*.fif"))
 
 # STEP1: run maxfilter -headpos to get .pos files
 for RAWFILE in ${file_list[@]}
