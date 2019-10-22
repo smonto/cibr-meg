@@ -20,7 +20,7 @@ for RAWFILE in ${file_list[@]}
     done
 
 # STEP2: run mean_meg2head to obtain mean head position over runs
-python mean_meg2head_trans.py /projects/${project}/maxfiltered/${id}
+python /opt/tools/cibr-meg/maxfilter/mean_meg2head_trans.py /projects/${project}/maxfiltered/${id}
 
 # STEP3: run MaxFilter to clean data and transform to mean head position
 mkdir -p /projects/${project}/maxfiltered/logs
