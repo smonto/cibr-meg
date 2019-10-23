@@ -38,4 +38,4 @@ for RAWFILE in ${file_list[@]}
 echo "Maxfiltering ready!"
 
 # STEP4: combine resulting Maxfiltered files
-/opt/anaconda/bin/python /opt/tools/cibr-meg/combine_fifs.py combined_file_name "${mf_list[@]}"
+/opt/anaconda/bin/python /opt/tools/cibr-meg/combine_fifs.py combined_file_name "${mf_list[*]}"
