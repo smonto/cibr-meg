@@ -1,10 +1,13 @@
 #!/bin/bash
 
+# This script runs the same Maxfilter command for all identified files.
+# Files are searched according to project name and file name tag.
+# Results are written to folder "maxfiltered" and logs to "logs".
 # NOTE! replace "id" and "project" with project-specific names!
-# NOTE! edit the MaxFilter command according to need
+# NOTE! edit the MaxFilter command options according to need
 
-id="01"
-project="meg"
+id="subj01" # identifier for target files
+project="meg" # the project name under /projects/ folder
 file_list=($(find /projects/${project}/orig/ -name "*${id}*.fif"))
 for RAWFILE in ${file_list[@]}
     do

@@ -3,10 +3,10 @@ import mne
 import matplotlib.pyplot as plt
 from sys import argv
 
-ch_type='grad' # 'grad' or 'mag'
+ch_type='mag' # 'grad' or 'mag'
 reject = dict(grad=4e-10, mag=4e-12, eog=150e-6)
 fmin, fmax = 2, 100
-n_fft = 2048
+n_fft = 2000
 
 raw_file=argv[1]
 ch_sets=[   'Left-temporal',
@@ -21,7 +21,8 @@ ch_sets=[   'Left-temporal',
 
 Raw=mne.io.read_raw_fif(raw_file, preload=True)
 Raw.pick_types(meg=ch_type)
-plt.figure()
+fig=plt.figure()
+fig.suptitle(raw_file)
 nn=0
 for ch_set in ch_sets:
     ch_sel=mne.read_selection(ch_set, info=Raw.info)

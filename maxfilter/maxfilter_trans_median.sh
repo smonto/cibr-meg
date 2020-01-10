@@ -1,7 +1,8 @@
 #! /bin/bash
 
+# This script searches for the closest to median head position file among given .fif-files.
 # NOTE: edit the line starting with file_list to specify which files are searched for and used here
-# NOTE: copies the found median file to ./scripts/med.fif -- edit the last line to change
+# NOTE: copies the found median file to ./scripts/median.fif -- edit the last line to change
 
 ## Stage 1: Find the reference head position
 echo ""
@@ -57,7 +58,6 @@ done
 # The common head position file
 #hp_file=${file_list[${hp_min_ind}]} | sed 's/^.//g'
 hp_file=${file_list[${hp_min_ind}]}
-echo "Compromise head position file: $hp_file"
-echo "Total ranks from median position: $hp_min_val"
-cp "$hp_file" "scripts/med.fif"
-
+echo "Found median head position file: $hp_file"
+echo "Total ranks away from true median: $hp_min_val"
+cp "$hp_file" "scripts/median.fif"
