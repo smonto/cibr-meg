@@ -18,7 +18,7 @@ def main(fname):
 
 	#%% read and filter data
 	Raw=read_raw_fif(fname, preload=True)
-	Raw.filter(1, 40, fir_design='firwin')
+	Raw.filter(0, 40, fir_design='firwin')
 	Events=find_events(Raw, min_duration=0.003)
 
 	#%% run ICA for automatic ocular & cardiac rejection (plot the rejected topos)
