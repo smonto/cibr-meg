@@ -38,10 +38,14 @@ def main(fname):
 	    ica.plot_components(ch_type='mag', picks=ecg_inds)
 	except IndexError as exc:
 	    pass
+	except ValueError as exc:
+		pass
 	try:
 	    ica.plot_components(ch_type='mag', picks=eog_inds)
 	except IndexError as exc:
 	    pass
+	except ValueError as exc:
+		pass	
 	ica.exclude.extend(eog_inds)
 	ica.exclude.extend(ecg_inds)
 	# Save changes to the data:
