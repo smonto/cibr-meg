@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# This script performs Maxfiltering for files with given id.
-# Head position is transformed to the mean over all files found with this id.
+# This script performs Maxfiltering for files with given id in the project folder.
+# Head position is transformed to the mean of all found files.
 # The head positions description file is /projects/${project}/maxfiltered/${id}/mean-trans.fif
 # NOTE! replace "id" and "project" with correct names!
 # NOTE! edit the MaxFilter command according to need

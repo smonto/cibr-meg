@@ -18,7 +18,7 @@ def main(fname):
 
 	#%% read and filter data
 	Raw=read_raw_fif(fname, preload=True)
-	Raw.filter(0, 40, fir_design='firwin')
+	Raw.filter(1, 40, fir_design='firwin')
 	Events=find_events(Raw, min_duration=0.003)
 
 	#%% run ICA for automatic ocular & cardiac rejection (plot the rejected topos)
@@ -27,8 +27,8 @@ def main(fname):
 	ica.fit(Raw, picks=picks_ica, reject=reject_ica, decim=4)
 	ecg_epochs = create_ecg_epochs(Raw, ch_name=ecg_ch, reject=reject_ica) # ch_name='MEG0111') # find the ECG events automagically
 	eog_epochs = create_eog_epochs(Raw, reject=reject_ica) # find the EOG events automagically
-	ecg_epochs.average().plot_joint(times=0)
-	eog_epochs.average().plot_joint(times=0)
+	#ecg_epochs.average().plot_joint(times=0)
+	#eog_epochs.average().plot_joint(times=0)
 	ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, ch_name=ecg_ch, method='ctps', threshold=0.2)
 	print(ecg_inds)
 	eog_inds, eog_scores = ica.find_bads_eog(eog_epochs)
@@ -53,7 +53,7 @@ def main(fname):
 	Raw=ica.apply(Raw)
 	#Raw.copy().crop(10,20).plot()
 	#Raw=ica.apply(Raw,exclude=[eog_inds]) # list of the ICA components to exclude!!!
-	return Raw
+	return Raw, ica
 
 if __name__=="__main__":
 	main()

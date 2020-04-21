@@ -54,6 +54,7 @@ pos_files=glob.glob('*.pos')
 HP=np.zeros((0,3)) # stores the (x,y,z) of head origin for plotting
 net_trans=np.zeros((0,3)) # for storing the device->head translations
 net_rot=np.zeros((0,3,3)) # for storing the device->head rotations
+net_time=[] # for storing file-specific sample times
 
 for pos_file in pos_files:
     print("File: " + pos_file)
@@ -61,6 +62,7 @@ for pos_file in pos_files:
     trans, rot, t = mne.chpi.head_pos_to_trans_rot_t(quats) # convert quaternions
     net_trans=np.concatenate((net_trans,trans),axis=0) # add movement in this file
     net_rot=np.concatenate((net_rot,rot),axis=0) # add rotation in this file
+    net_time=net_time.append(t)
     hp=np.zeros(trans.shape) # initialize head origin location
     # compute head origin position in device coordinates in every time point:
     for k in range(trans.shape[0]):
