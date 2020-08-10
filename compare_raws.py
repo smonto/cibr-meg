@@ -57,7 +57,7 @@ if __name__ == '__main__':
     # load the raws from paths given as commandl ine arguments
     raws = [mne.io.Raw(path, preload=True) for path in sys.argv[1:]]
 
-    print "Low-pass filtering to 100"
+    print("Low-pass filtering to 100")
 
     # Filter to 100 as default so that it is easy to compare files that
     # have not been maxfiltered
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         except:
             pass
 
-    print "Dropping non-common channels"
+    print("Dropping non-common channels")
 
     # Find common set of channels from info objects 
     common_channels = np.bitwise_and.reduce(
@@ -78,16 +78,16 @@ if __name__ == '__main__':
         raw.drop_channels([ch_name for ch_name in raw.info['ch_names'] 
                            if ch_name not in common_channels])
 
-    print "Combining"
+    print("Combining")
 
     # use helper function to prepare a combination raw 
     # where the channels are interleaved
     combined_raw = prepare_raw_for_changes(raws)
 
-    print "Plotting time series"
+    print("Plotting time series")
     combined_raw.plot(block=True)
 
-    print "Plotting PSD's"
+    print("Plotting PSD's")
 
     # Also plot power spectral densities
     fig, axes = plt.subplots(len(raws), 2, sharex=True, sharey=True)

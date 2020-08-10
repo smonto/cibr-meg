@@ -54,7 +54,7 @@ pos_files=glob.glob('*.pos')
 HP=np.zeros((0,3)) # stores the (x,y,z) of head origin for plotting
 net_trans=np.zeros((0,3)) # for storing the device->head translations
 net_rot=np.zeros((0,3,3)) # for storing the device->head rotations
-net_time=[] # for storing file-specific sample times
+net_time=list() # for storing file-specific sample times
 
 for pos_file in pos_files:
     print("File: " + pos_file)
