@@ -56,11 +56,11 @@ args = parser.parse_args()
 
 # Build some paths:
 target_dir = os.path.join('..', 'preprocessed/')
-os.mkdir(target_dir)
+os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
-os.mkdir(path_to_tmp_files)
+os.makedirs(path_to_tmp_files, exist_ok=True)
 path_to_ICA = os.path.join(target_dir, 'ICA/')
-os.mkdir(path_to_ICA)
+os.makedirs(path_to_ICA, exist_ok=True)
 #ref_info = mne.io.read_info(ref_file)
 #destination = info['dev_head_t']
 
