@@ -67,6 +67,8 @@ os.mkdir(path_to_ICA)
 # Sort out and confirm the files to be processed:
 # First, go through fnames to find final files
 file_list = [glob(f) for f in args.fnames[0]]
+print("Found files: %s" % args.fnames)
+print("Found files: %s" % args.fnames[0])
 print("Found files: %s" % file_list)
 
 for rawfile in file_list:
