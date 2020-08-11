@@ -69,9 +69,9 @@ os.makedirs(path_to_ICA, exist_ok=True)
 file_list = [glob(f) for f in args.fnames]
 #print("Found files: %s" % args.fnames)
 #print("Found files: %s" % args.fnames[0])
-print("Found files: %s" % file_list)
+print("Found files: %s" % file_list[0])
 
-for rawfile in file_list:
+for rawfile in file_list[0]:
     fs = rawfile.split(".")
     raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
