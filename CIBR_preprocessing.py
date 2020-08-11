@@ -81,7 +81,7 @@ for rawfile in file_list[0]:
 result_files=list() # collects result file names
 
 # Start processing loop for each file
-for rawfile in file_list:
+for rawfile in file_list[0]:
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload = True)
     # Bad channels
