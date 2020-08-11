@@ -87,7 +87,7 @@ for rawfile in file_list[0]:
     # Bad channels
     if args.bad_chs==[]:
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
-                raw.copy.filter(None, 40), origin='auto', calibration=cal,
+                raw.copy().filter(None, 40), origin='auto', calibration=cal,
                 cross_talk=ctc, skip_by_annotation=['edge', 'bad_acq_skip'])
         args.bad_chs = noisy_chs + flat_chs
     raw.info['bads'].extend(args.bad_chs)
