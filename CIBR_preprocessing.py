@@ -5,11 +5,11 @@ Edited:
 100820
 
 To do:
+- is it ok to filter / resample _before_ OTP?
 - ICA visualization and component selection
-- continuous head position
-    https://mne.tools/stable/auto_tutorials/preprocessing/plot_60_maxwell_filtering_sss.html#id8
 - final signal visualization for user to check
-- check if chpi was on
+- if chpi was on, compensate continuous head position
+    https://mne.tools/stable/auto_tutorials/preprocessing/plot_60_maxwell_filtering_sss.html#id8
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -18,11 +18,13 @@ It consist of the following main steps:
 - oversampled temporal projection (OTP)
 - temporal signal subspace separation (TSSS)
 - independent component analysis (ICA)
+with possible head position tasks.
 
 User input:
 - the files to be processed (in current directory; wildcards accepted)
 - bad channel list (manual check recommended; automatic if not given)
 - reference head position file for head position alignment (optional)
+- head movement file for head movement compensation (optional, by MaxFilter)
 - low-pass and high-pass frequencies (optional, automatic)
 - resampling frequency (optional, automatic)
 - the need to combine files (True/False)
@@ -46,7 +48,8 @@ cal = '/neuro/databases/sss/sss_cal.dat'
 # Parse command arguments:
 parser = ArgumentParser()
 parser.add_argument("fnames", nargs="+", help="the files to be processed")
-parser.add_argument("--headpos", default=None, dest='ref_headpos', help="reference head position file")
+parser.add_argument("--dest", default=None, dest='head_dest', help="reference head position file")
+parser.add_argument("--headpos", default="", dest='head_movement', help="head movement pos file")
 parser.add_argument("--bad", default=[], dest='bad_chs', help="list of bad channels in the files")
 parser.add_argument("--fs", default=0, dest='sfreq', help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', help="low-pass frequency")
@@ -61,11 +64,8 @@ path_to_tmp_files = os.path.join(target_dir, 'tmp/')
 os.makedirs(path_to_tmp_files, exist_ok=True)
 path_to_ICA = os.path.join(target_dir, 'ICA/')
 os.makedirs(path_to_ICA, exist_ok=True)
-#ref_info = mne.io.read_info(ref_file)
-#destination = info['dev_head_t']
 
-# Sort out and confirm the files to be processed:
-# First, go through fnames to find final files
+# Find and confirm the files to be processed:
 file_list = [glob(f) for f in args.fnames]
 #print("Found files: %s" % args.fnames)
 #print("Found files: %s" % args.fnames[0])
@@ -83,7 +83,7 @@ result_files=list() # collects result file names
 # Start processing loop for each file
 for rawfile in file_list[0]:
     ## Read from file:
-    raw = mne.io.read_raw_fif(rawfile, preload = True)
+    raw = mne.io.read_raw_fif(rawfile, preload=True)
     # Bad channels
     if args.bad_chs==[]:
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
@@ -92,9 +92,25 @@ for rawfile in file_list[0]:
         args.bad_chs = noisy_chs + flat_chs
     raw.info['bads'].extend(args.bad_chs)
     print("Bad channels: {}".format(raw.info["bads"]))
-    # Filter and resample the raw data as needed:
-    # if chpi was on:
+
+    # Get rid of cHPI signals if any:
     raw=mne.chpi.filter_chpi(raw, include_line=True)
+
+    ## ---------------------------------------------------------
+    ## Application of OTP:
+    raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
+    #info = mne.io.read_info(raw_name)
+
+    ## ---------------------------------------------------------
+    ## Apply TSSS on the data:
+    # load head movement (can be replaced by Python functions?)
+    if args.headpos==None:
+        args.headpos = mne.chpi.read_head_pos(args.headpos)
+    raw=mne.preprocessing.maxwell_filter(raw ,cross_talk=ctc, calibration=cal,
+                st_duration=10, st_correlation=0.999, coord_frame=head,
+                destination=args.dest, headpos=args.headpos)
+
+    # Filter and resample the raw data as needed:
     if args.high_freq==0 and args.combine_files:
         args.high_freq=raw.info['h_freq'] / len(file_list)
     if args.high_freq>0:
@@ -115,17 +131,6 @@ for rawfile in file_list[0]:
         raw.info["fs"]=args.sfreq
         print("Sampling frequency: {}".format(raw.info["fs"]))
 
-    ## ---------------------------------------------------------
-    ## Application of OTP:
-    raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
-    #info = mne.io.read_info(raw_name)
-
-    ## ---------------------------------------------------------
-    ## Apply TSSS on the data:
-    #origin=info['dev_head_t']['trans'][[0,1,2],3]
-    raw=mne.preprocessing.maxwell_filter(raw ,cross_talk=ctc, calibration=cal,
-                        st_duration=10, st_correlation =0.999,
-                        destination = args.headpos, coord_frame=head)
     # Save intermediate results to a temporary file:
     raw.save(tmp_file, overwrite=True)
 
