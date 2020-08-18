@@ -37,6 +37,7 @@ import os
 from glob import glob
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
 from argparse import ArgumentParser
+from matplotlib.pyplot import show
 
 # CIBR cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
@@ -140,7 +141,7 @@ for rawfile in file_list[0]:
     ica = ICA(n_components=0.95, method='fastica', random_state=1, max_iter=1000)
     picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False,
                           stim=False, exclude='bads')
-    ica.fit(raw)
+    ica.fit(raw, decim=2)
     # Identify ECG components:
     n_max_ecg = 3  # use max 3 components
     ecg_epochs = create_ecg_epochs(raw, tmin=-0.5, tmax=0.5)
@@ -148,11 +149,12 @@ for rawfile in file_list[0]:
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps')
     print('Found {} ECG component(s)'.format(len(ecg_inds)))
     try:
-        ica.plot_components(ch_type='mag', picks=ecg_inds)
+        ica.plot_components(ch_type='mag', picks=ecg_inds, show=False)
     except IndexError as exc:
         pass
     except ValueError as exc:
         pass
+    show(block=False)
     # Ask to verify ECG components
     ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     if ecg_user=="y":
@@ -166,11 +168,12 @@ for rawfile in file_list[0]:
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)'.format(len(eog_inds)))
     try:
-        ica.plot_components(ch_type='mag', picks=eog_inds)
+        ica.plot_components(ch_type='mag', picks=eog_inds, show=False)
     except IndexError as exc:
         pass
     except ValueError as exc:
         pass
+    show(block=False)
     eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     if eog_user=="y":
         ica.exclude += eog_inds[:n_max_eog]
@@ -180,13 +183,14 @@ for rawfile in file_list[0]:
     # Show all the other components
     # Ask for other components to be rejected
 
+    # Apply ICA solution to the data:
+    print("ICA.exclude: " + str(ica.exclude))
+    raw = ica.apply(raw)
     # Save ICA solution:
     ica.save(ica_file)
-    # Apply ICA solution to the data:
-    raw = ica.apply(raw)
     # Save the final ICA-OTP-SSS pre-processed data
     raw.save(result_file, overwrite=True)
-    print("Processed and saved file {}".format(result_file))
+    print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
 if args.combine_files:
     raw = mne.io.read_raw_fif(result_files[0])
@@ -195,6 +199,6 @@ if args.combine_files:
         os.remove(result_file)
     raw.save(result_files[0], overwrite=True)
     result_files=result_files[0]
-print("Produced the following files:")
+print("\nProduced the following files:")
 print(result_files)
-print("Thank you for waiting!")
+print("\nThank you for waiting!")
