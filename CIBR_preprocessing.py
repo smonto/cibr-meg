@@ -110,7 +110,7 @@ for rawfile in file_list[0]:
         except:
             print("Could not load head position from " + str(args.headpos))
     raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
-                st_duration=10, st_correlation=0.999, coord_frame=head,
+                st_duration=10, st_correlation=0.999, coord_frame="head",
                 destination=args.dest, headpos=args.headpos)
 
     # Filter and resample the raw data as needed:
