@@ -166,12 +166,12 @@ for rawfile in file_list[0]:
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)'.format(len(eog_inds)))
     try:
-	    ica.plot_components(ch_type='mag', picks=eog_inds)
-	except IndexError as exc:
-	    pass
-	except ValueError as exc:
-		pass
-	eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
+        ica.plot_components(ch_type='mag', picks=eog_inds)
+    except IndexError as exc:
+        pass
+    except ValueError as exc:
+        pass
+    eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     if eog_user=="y":
         ica.exclude += eog_inds[:n_max_eog]
     else:
