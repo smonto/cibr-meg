@@ -154,7 +154,7 @@ for rawfile in file_list[0]:
     except ValueError as exc:
         pass
     # Ask to verify ECG components
-    ecg_user = input("Are these components valid? ("y" or give #ICA to use)")
+    ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     if ecg_user=="y":
         ica.exclude += ecg_inds[:n_max_ecg]
     else:
@@ -171,7 +171,7 @@ for rawfile in file_list[0]:
 	    pass
 	except ValueError as exc:
 		pass
-	eog_user = input("Are these components valid? ("y" or give #ICA to use)")
+	eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     if eog_user=="y":
         ica.exclude += eog_inds[:n_max_eog]
     else:
