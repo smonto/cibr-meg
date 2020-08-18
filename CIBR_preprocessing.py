@@ -176,7 +176,7 @@ for rawfile in file_list[0]:
     raw.save(result_file, overwrite=True)
     print("Processed and saved file {}".format(result_file))
     result_files.append(result_file)
-if combine_files:
+if args.combine_files:
     raw = mne.io.read_raw_fif(result_files[0])
     for result_file in result_files[1:]:
         raw.append(mne.io.read_raw_fif(result_file))
