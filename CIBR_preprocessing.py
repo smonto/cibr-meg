@@ -148,11 +148,11 @@ for rawfile in file_list[0]:
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps')
     print('Found {} ECG component(s)'.format(len(ecg_inds)))
     try:
-	    ica.plot_components(ch_type='mag', picks=ecg_inds)
-	except IndexError as exc:
-	    pass
-	except ValueError as exc:
-		pass
+        ica.plot_components(ch_type='mag', picks=ecg_inds)
+    except IndexError as exc:
+        pass
+    except ValueError as exc:
+        pass
     # Ask to verify ECG components
     ecg_user = input("Are these components valid? ("y" or give #ICA to use)")
     if ecg_user=="y":
