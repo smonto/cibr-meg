@@ -48,13 +48,13 @@ cal = '/neuro/databases/sss/sss_cal.dat'
 # Parse command arguments:
 parser = ArgumentParser()
 parser.add_argument("fnames", nargs="+", help="the files to be processed")
-parser.add_argument("--dest", default=None, dest='head_dest', help="reference head position file")
-parser.add_argument("--headpos", default=None, dest='head_movement', help="head movement pos file")
+parser.add_argument("--dest", default=None, dest='dest', help="reference head position file")
+parser.add_argument("--headpos", default=None, dest='headpos', help="head movement pos file")
 parser.add_argument("--bad", default=[], dest='bad_chs', help="list of bad channels in the files")
 parser.add_argument("--fs", default=0, dest='sfreq', help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', help="high-pass frequency")
-parser.add_argument("--comb", default=False, dest='combine_files', help="combine all files or not")
+parser.add_argument("--combine", default=False, dest='combine_files', help="combine all files or not")
 args = parser.parse_args()
 
 # Build some paths:
