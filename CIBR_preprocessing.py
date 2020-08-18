@@ -49,7 +49,7 @@ cal = '/neuro/databases/sss/sss_cal.dat'
 parser = ArgumentParser()
 parser.add_argument("fnames", nargs="+", help="the files to be processed")
 parser.add_argument("--dest", default=None, dest='head_dest', help="reference head position file")
-parser.add_argument("--headpos", default="", dest='head_movement', help="head movement pos file")
+parser.add_argument("--headpos", default=None, dest='head_movement', help="head movement pos file")
 parser.add_argument("--bad", default=[], dest='bad_chs', help="list of bad channels in the files")
 parser.add_argument("--fs", default=0, dest='sfreq', help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', help="low-pass frequency")
@@ -104,9 +104,12 @@ for rawfile in file_list[0]:
     ## ---------------------------------------------------------
     ## Apply TSSS on the data:
     # load head movement (can be replaced by Python functions?)
-    if args.headpos==None:
-        args.headpos = mne.chpi.read_head_pos(args.headpos)
-    raw=mne.preprocessing.maxwell_filter(raw ,cross_talk=ctc, calibration=cal,
+    if not args.headpos==None:
+        try:
+            args.headpos = mne.chpi.read_head_pos(args.headpos)
+        except:
+            print("Could not load head position from " + str(args.headpos))
+    raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
                 st_duration=10, st_correlation=0.999, coord_frame=head,
                 destination=args.dest, headpos=args.headpos)
 
