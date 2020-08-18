@@ -2,14 +2,11 @@
 @author: analexan, sipemont (JYU, CIBR)
 
 Edited:
-100820
+180820
 
 To do:
-- is it ok to filter / resample _before_ OTP?
 - ICA visualization and component selection
 - final signal visualization for user to check
-- if chpi was on, compensate continuous head position
-    https://mne.tools/stable/auto_tutorials/preprocessing/plot_60_maxwell_filtering_sss.html#id8
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -150,20 +147,35 @@ for rawfile in file_list[0]:
     ecg_epochs.apply_baseline((None, None))
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps')
     print('Found {} ECG component(s)'.format(len(ecg_inds)))
-    ## # TODO:
-    # Show ECG components
+    try:
+	    ica.plot_components(ch_type='mag', picks=ecg_inds)
+	except IndexError as exc:
+	    pass
+	except ValueError as exc:
+		pass
     # Ask to verify ECG components
-    ica.exclude += ecg_inds[:n_max_ecg]
+    ecg_user = input("Are these components valid? ("y" or give #ICA to use)")
+    if ecg_user=="y":
+        ica.exclude += ecg_inds[:n_max_ecg]
+    else:
+        ica.exclude += ecg_user
     # Identify EOG components:
     n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
     eog_epochs.apply_baseline((None, None))
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)'.format(len(eog_inds)))
-    ## # TODO:
-    # Show EOG components
-    # Ask to verify EOG components
-    ica.exclude += eog_inds[:n_max_eog]
+    try:
+	    ica.plot_components(ch_type='mag', picks=eog_inds)
+	except IndexError as exc:
+	    pass
+	except ValueError as exc:
+		pass
+	eog_user = input("Are these components valid? ("y" or give #ICA to use)")
+    if eog_user=="y":
+        ica.exclude += eog_inds[:n_max_eog]
+    else:
+        ica.exclude += eog_user
     ## # TODO:
     # Show all the other components
     # Ask for other components to be rejected
