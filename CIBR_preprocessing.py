@@ -55,7 +55,7 @@ parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list o
 parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
-parser.add_argument("--combine", default=False, dest='combine_files', action=store_const, const=True, help="combine all files or not")
+parser.add_argument("--combine", default=False, dest='combine_files', action='store_const', const=True, help="combine all files or not")
 args = parser.parse_args()
 
 # Build some paths:
