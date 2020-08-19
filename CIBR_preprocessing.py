@@ -17,11 +17,12 @@ It consist of the following main steps:
 - independent component analysis (ICA)
 with possible head position tasks.
 
-User input:
-- the files to be processed (in current directory; wildcards accepted)
-- bad channel list (manual check recommended; automatic if not given)
-- reference head position file for head position alignment (optional)
-- head movement file for head movement compensation (optional, by MaxFilter)
+Expected arguments:
+- files to be processed (in current directory; wildcards accepted)
+Optional:
+--bad: bad channel list (manual recommended; automatic if not given)
+--dest: reference head position file for head position alignment
+--headpos: head movement file for head movement compensation (from MaxFilter)
 - low-pass and high-pass frequencies (optional, automatic)
 - resampling frequency (optional, automatic)
 - the need to combine files (True/False)
@@ -38,6 +39,7 @@ from glob import glob
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
 from argparse import ArgumentParser
 from matplotlib.pyplot import show
+from matplotlib.pyplot import ion as pyplot_ion
 
 # CIBR cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
@@ -142,6 +144,7 @@ for rawfile in file_list[0]:
     picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False,
                           stim=False, exclude='bads')
     ica.fit(raw, decim=2)
+    pyplot_ion()
     # Identify ECG components:
     n_max_ecg = 3  # use max 3 components
     ecg_epochs = create_ecg_epochs(raw, tmin=-0.5, tmax=0.5)
@@ -154,13 +157,14 @@ for rawfile in file_list[0]:
         pass
     except ValueError as exc:
         pass
-    show(block=False)
     # Ask to verify ECG components
-    ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
-    if ecg_user=="y":
-        ica.exclude += ecg_inds[:n_max_ecg]
-    else:
-        ica.exclude += ecg_user
+    #ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
+    print("Click on the ICA components to turn off / on")
+    show(block=True)
+    #if ecg_user=="y":
+    #    ica.exclude += ecg_inds[:n_max_ecg]
+    #else:
+    #    ica.exclude += ecg_user
     # Identify EOG components:
     n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
@@ -170,9 +174,9 @@ for rawfile in file_list[0]:
     try:
         ica.plot_components(ch_type='mag', picks=eog_inds, show=False)
     except IndexError as exc:
-        pass
+        raise
     except ValueError as exc:
-        pass
+        raise
     show(block=False)
     eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     if eog_user=="y":
