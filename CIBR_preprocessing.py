@@ -150,6 +150,7 @@ for rawfile in file_list[0]:
     ecg_epochs = create_ecg_epochs(raw, tmin=-0.5, tmax=0.5)
     ecg_epochs.apply_baseline((None, None))
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps')
+    ica.exclude += ecg_inds
     print('Found {} ECG component(s)'.format(len(ecg_inds)))
     try:
         ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
@@ -158,7 +159,7 @@ for rawfile in file_list[0]:
     except ValueError as exc:
         raise
     # Ask to verify ECG components
-    print("Click on the ECG component name to reject it.")
+    print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
     #ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     #if ecg_user=="y":
@@ -170,6 +171,7 @@ for rawfile in file_list[0]:
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
     eog_epochs.apply_baseline((None, None))
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
+    ica.exclude += eog_inds
     print('Found {} EOG component(s)'.format(len(eog_inds)))
     try:
         ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
@@ -178,7 +180,7 @@ for rawfile in file_list[0]:
     except ValueError as exc:
         raise
     # Ask to verify EOG components
-    print("Click on the EOG component name to reject it.")
+    print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
     #eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     #if eog_user=="y":
