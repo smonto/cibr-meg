@@ -98,7 +98,7 @@ for rawfile in file_list[0]:
 
     ## ---------------------------------------------------------
     ## Application of OTP:
-    raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
+    #raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
     #info = mne.io.read_info(raw_name)
 
     ## ---------------------------------------------------------
