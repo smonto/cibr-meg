@@ -152,15 +152,15 @@ for rawfile in file_list[0]:
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps')
     print('Found {} ECG component(s)'.format(len(ecg_inds)))
     try:
-        ica.plot_components(ch_type='mag', picks=ecg_inds, show=False)
+        ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
     except IndexError as exc:
-        pass
+        raise
     except ValueError as exc:
-        pass
+        raise
     # Ask to verify ECG components
-    #ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
-    print("Click on the ICA components to turn off / on")
+    print("Click on the ECG component name to reject it.")
     show(block=True)
+    #ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
     #if ecg_user=="y":
     #    ica.exclude += ecg_inds[:n_max_ecg]
     #else:
@@ -172,23 +172,26 @@ for rawfile in file_list[0]:
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)'.format(len(eog_inds)))
     try:
-        ica.plot_components(ch_type='mag', picks=eog_inds, show=False)
+        ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
     except IndexError as exc:
         raise
     except ValueError as exc:
         raise
-    show(block=False)
-    eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
-    if eog_user=="y":
-        ica.exclude += eog_inds[:n_max_eog]
-    else:
-        ica.exclude += eog_user
+    # Ask to verify EOG components
+    print("Click on the EOG component name to reject it.")
+    show(block=True)
+    #eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
+    #if eog_user=="y":
+    #    ica.exclude += eog_inds[:n_max_eog]
+    #else:
+    #    ica.exclude += eog_user
+
     ## # TODO:
     # Show all the other components
     # Ask for other components to be rejected
 
     # Apply ICA solution to the data:
-    print("ICA.exclude: " + str(ica.exclude))
+    print("Excluding the following ICA components:\n" + str(ica.exclude))
     raw = ica.apply(raw)
     # Save ICA solution:
     ica.save(ica_file)
