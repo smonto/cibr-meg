@@ -23,9 +23,10 @@ Optional:
 --bad: bad channel names, separated by space (automatic if not given)
 --dest: reference head position file for head position alignment
 --headpos: head position file for movement compensation (from MaxFilter)
-- low-pass and high-pass frequencies (optional, automatic)
-- resampling frequency (optional, automatic)
-- the need to combine files (True/False)
+--lp: new low-pass frequency (automatic)
+--hp: new high-pass frequency (automatic)
+--fs: new resampling frequency (automatic)
+--combine: combine input files to single output
 
 The final pre-processed data will be saved next to the original data in
 folder "preprocessed_<folder_name>". Intermediate results will be saved under
@@ -54,7 +55,7 @@ parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list o
 parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
-parser.add_argument("--combine", default=False, dest='combine_files', type=boolean, help="combine all files or not")
+parser.add_argument("--combine", default=False, dest='combine_files', action=store_const, const=True, help="combine all files or not")
 args = parser.parse_args()
 
 # Build some paths:
