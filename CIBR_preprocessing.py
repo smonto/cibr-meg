@@ -20,9 +20,9 @@ with possible head position tasks.
 Expected arguments:
 - files to be processed (in current directory; wildcards accepted)
 Optional:
---bad: bad channel list (manual recommended; automatic if not given)
+--bad: bad channel names, separated by space (automatic if not given)
 --dest: reference head position file for head position alignment
---headpos: head movement file for head movement compensation (from MaxFilter)
+--headpos: head position file for movement compensation (from MaxFilter)
 - low-pass and high-pass frequencies (optional, automatic)
 - resampling frequency (optional, automatic)
 - the need to combine files (True/False)
@@ -48,13 +48,13 @@ cal = '/neuro/databases/sss/sss_cal.dat'
 # Parse command arguments:
 parser = ArgumentParser()
 parser.add_argument("fnames", nargs="+", help="the files to be processed")
-parser.add_argument("--dest", default=None, dest='dest', help="reference head position file")
-parser.add_argument("--headpos", default=None, dest='headpos', help="head movement pos file")
-parser.add_argument("--bad", default=[], dest='bad_chs', help="list of bad channels in the files")
-parser.add_argument("--fs", default=0, dest='sfreq', help="new sampling frequency")
-parser.add_argument("--lp", default=0, dest='high_freq', help="low-pass frequency")
-parser.add_argument("--hp", default=0, dest='low_freq', help="high-pass frequency")
-parser.add_argument("--combine", default=False, dest='combine_files', help="combine all files or not")
+parser.add_argument("--dest", dest='dest', help="reference head position file")
+parser.add_argument("--headpos", dest='headpos', help="head movement pos file")
+parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list of bad channels in the files")
+parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
+parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
+parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
+parser.add_argument("--combine", default=False, dest='combine_files', type=boolean, help="combine all files or not")
 args = parser.parse_args()
 
 # Build some paths:
