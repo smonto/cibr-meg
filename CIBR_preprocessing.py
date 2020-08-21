@@ -22,7 +22,7 @@ Expected arguments:
 Optional:
 --bad: bad channel names, separated by space (automatic if not given)
 --dest: reference head position file for head position alignment
---headpos: head position file for movement compensation (from MaxFilter)
+--headpos: head position file for movement compensation (with MaxFilter -headpos and -hp)
 --lp: new low-pass frequency (automatic)
 --hp: new high-pass frequency (automatic)
 --fs: new resampling frequency (automatic)
@@ -93,6 +93,8 @@ for rawfile in file_list[0]:
         args.bad_chs = noisy_chs + flat_chs
     raw.info['bads'].extend(args.bad_chs)
     print("Bad channels: {}".format(raw.info["bads"]))
+    # fix MAG coil type codes to avoid warning messages:
+    raw.fix_mag_coils()
 
     # Get rid of cHPI signals if any:
     raw=mne.chpi.filter_chpi(raw, include_line=True)
@@ -105,14 +107,17 @@ for rawfile in file_list[0]:
     ## ---------------------------------------------------------
     ## Apply TSSS on the data:
     # load head movement (can be replaced by Python functions?)
+    # mne.chpi.compute_chpi_locs() and mne.chpi.compute_head_pos()
     if not args.headpos==None:
         try:
             args.headpos = mne.chpi.read_head_pos(args.headpos)
         except:
             print("Could not load head position from " + str(args.headpos))
+    dest_info=mne.read_info(args.dest)
+    destination=dest_info.info['dev_head_t']['trans'][0:3,3]
     raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
                 st_duration=10, st_correlation=0.999, coord_frame="head",
-                destination=args.dest, head_pos=args.headpos)
+                destination=destination, head_pos=args.headpos)
 
     # Filter and resample the raw data as needed:
     if args.high_freq==0 and args.combine_files:
