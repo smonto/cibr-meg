@@ -94,7 +94,7 @@ for rawfile in file_list[0]:
     raw.info['bads'].extend(args.bad_chs)
     print("Bad channels: {}".format(raw.info["bads"]))
     # fix MAG coil type codes to avoid warning messages:
-    raw.fix_mag_coils()
+    raw.fix_mag_coil_types()
 
     # Get rid of cHPI signals if any:
     raw=mne.chpi.filter_chpi(raw, include_line=True)
