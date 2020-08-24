@@ -126,7 +126,7 @@ for rawfile in file_list[0]:
         raw.info['lowpass']=args.high_freq
         print("Low-pass frequency: {}".format(raw.info["lowpass"]))
     if args.low_freq>0:
-        raw.filter(h_freq=args.low_freq, l_freq=None)
+        raw.filter(l_freq=None, h_freq=args.low_freq)
         raw.info['highpass']=args.low_freq
         print("High-pass frequency: {}".format(raw.info["highpass"]))
     if args.sfreq > 0:
