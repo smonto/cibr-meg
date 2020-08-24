@@ -2,10 +2,9 @@
 @author: analexan, sipemont (JYU, CIBR)
 
 Edited:
-180820
+240820
 
 To do:
-- ICA visualization and component selection
 - final signal visualization for user to check
 
 --------------------------------------------------------------
@@ -28,7 +27,7 @@ Optional:
 --fs: new resampling frequency (automatic)
 --combine: combine input files to single output
 
-The final pre-processed data will be saved next to the original data in
+The final pre-processed data will be saved under the original data in
 folder "preprocessed_<folder_name>". Intermediate results will be saved under
 "tmp" and "ICA" folders.
 """
@@ -59,7 +58,7 @@ parser.add_argument("--combine", default=False, dest='combine_files', action='st
 args = parser.parse_args()
 
 # Build some paths:
-target_dir = os.path.join('..', 'preprocessed/')
+target_dir = os.path.join(os.getcwd, 'preprocessed_' + os.getcwd().split("/")[-1])
 os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
 os.makedirs(path_to_tmp_files, exist_ok=True)
@@ -123,11 +122,11 @@ for rawfile in file_list[0]:
     if args.high_freq==0 and args.combine_files:
         args.high_freq=raw.info['h_freq'] / len(file_list)
     if args.high_freq>0:
-        raw.filter(0, args.high_freq)
+        raw.filter(None, args.high_freq)
         raw.info['lowpass']=args.high_freq
         print("Low-pass frequency: {}".format(raw.info["lowpass"]))
     if args.low_freq>0:
-        raw.filter(args.low_freq, 0)
+        raw.filter(args.low_freq, None)
         raw.info['highpass']=args.low_freq
         print("High-pass frequency: {}".format(raw.info["highpass"]))
     if args.sfreq > 0:
@@ -214,6 +213,8 @@ if args.combine_files:
         os.remove(result_file)
     raw.save(result_files[0], overwrite=True)
     result_files=result_files[0]
-print("\nProduced the following files:")
+print("\nPlease check the data:")
+# ADD visualization/comparison here
+print("\nProduced the following final data files:")
 print(result_files)
 print("\nThank you for waiting!")
