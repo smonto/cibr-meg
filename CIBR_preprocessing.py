@@ -122,11 +122,11 @@ for rawfile in file_list[0]:
     if args.high_freq==0 and args.combine_files:
         args.high_freq=raw.info['h_freq'] / len(file_list)
     if args.high_freq>0:
-        raw.filter(l_freq=args.high_freq)
+        raw.filter(l_freq=args.high_freq, h_freq=None)
         raw.info['lowpass']=args.high_freq
         print("Low-pass frequency: {}".format(raw.info["lowpass"]))
     if args.low_freq>0:
-        raw.filter(h_freq=args.low_freq)
+        raw.filter(h_freq=args.low_freq, l_freq=None)
         raw.info['highpass']=args.low_freq
         print("High-pass frequency: {}".format(raw.info["highpass"]))
     if args.sfreq > 0:
