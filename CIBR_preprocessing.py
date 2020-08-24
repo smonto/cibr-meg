@@ -113,7 +113,7 @@ for rawfile in file_list[0]:
             args.headpos = mne.chpi.read_head_pos(args.headpos)
         except:
             print("Could not load head position from " + str(args.headpos))
-    dest_info=mne.read_info(args.dest)
+    dest_info=mne.io.read_info(args.dest)
     destination=dest_info.info['dev_head_t']['trans'][0:3,3]
     raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
                 st_duration=10, st_correlation=0.999, coord_frame="head",
