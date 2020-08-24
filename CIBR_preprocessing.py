@@ -114,7 +114,7 @@ for rawfile in file_list[0]:
         except:
             print("Could not load head position from " + str(args.headpos))
     dest_info=mne.io.read_info(args.dest)
-    destination=dest_info.info['dev_head_t']['trans'][0:3,3]
+    destination=dest_info['dev_head_t']['trans'][0:3,3]
     raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
                 st_duration=10, st_correlation=0.999, coord_frame="head",
                 destination=destination, head_pos=args.headpos)
