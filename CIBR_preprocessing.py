@@ -2,10 +2,11 @@
 @author: analexan, sipemont (JYU, CIBR)
 
 Edited:
-240820
+250820
 
 To do:
 - final signal visualization for user to check
+- check that cHPI are subtracted by Maxwell filter
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -21,11 +22,11 @@ Expected arguments:
 Optional:
 --bad: bad channel names, separated by space (automatic if not given)
 --dest: reference head position file for head position alignment
---headpos: head position file for movement compensation (with MaxFilter -headpos and -hp)
+--headpos: do movement compensation?
 --lp: new low-pass frequency (automatic)
 --hp: new high-pass frequency (automatic)
 --fs: new resampling frequency (automatic)
---combine: combine input files to single output
+--combine: combine input files to single output?
 
 The final pre-processed data will be saved under the original data in
 folder "preprocessed_<folder_name>". Intermediate results will be saved under
@@ -40,6 +41,10 @@ from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
 from argparse import ArgumentParser
 from matplotlib.pyplot import show
 from matplotlib.pyplot import ion as pyplot_ion
+from copy import deepcopy
+import sys
+sys.path.append("/opt/tools/cibr-meg/")
+import compare_raws
 
 # CIBR cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
@@ -49,7 +54,7 @@ cal = '/neuro/databases/sss/sss_cal.dat'
 parser = ArgumentParser()
 parser.add_argument("fnames", nargs="+", help="the files to be processed")
 parser.add_argument("--dest", dest='dest', help="reference head position file")
-parser.add_argument("--headpos", dest='headpos', help="head movement pos file")
+parser.add_argument("--headpos", default=False, dest='headpos', action='store_const', const=True, help="head movement pos file")
 parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list of bad channels in the files")
 parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
@@ -57,7 +62,11 @@ parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-p
 parser.add_argument("--combine", default=False, dest='combine_files', action='store_const', const=True, help="combine all files or not")
 args = parser.parse_args()
 
-# Build some paths:
+## ---------------------------------------------------------
+## Find the files to be processed and build paths:
+file_list = [glob(f) for f in args.fnames]
+print("Found files: %s" % file_list[0])
+
 target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1])
 os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
@@ -65,25 +74,20 @@ os.makedirs(path_to_tmp_files, exist_ok=True)
 path_to_ICA = os.path.join(target_dir, 'ICA/')
 os.makedirs(path_to_ICA, exist_ok=True)
 
-# Find and confirm the files to be processed:
-file_list = [glob(f) for f in args.fnames]
-#print("Found files: %s" % args.fnames)
-#print("Found files: %s" % args.fnames[0])
-print("Found files: %s" % file_list[0])
-
 for rawfile in file_list[0]:
     fs = rawfile.split(".")
     raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
     tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
     result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
-
 result_files=list() # collects result file names
 
-# Start processing loop for each file
+## ---------------------------------------------------------
+## Start processing loop for each file
 for rawfile in file_list[0]:
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
+    raw_orig = deepcopy(raw)
     # Bad channels
     if args.bad_chs==[]:
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
@@ -95,30 +99,31 @@ for rawfile in file_list[0]:
     # fix MAG coil type codes to avoid warning messages:
     raw.fix_mag_coil_types()
 
-    # Get rid of cHPI signals if any:
-    raw=mne.chpi.filter_chpi(raw, include_line=True)
+    if args.headpos==True:
+        # Load cHPI and head movement:
+        chpi_amp = mne.compute_chpi_amplitudes(raw, t_step_min=0.01, t_window=0.2)
+        chpi_locs = mne.chpi.compute_chpi_locs(raw.info, chpi_amp, t_step_max=0.5, too_close='raise', adjust_dig=True)
+        head_pos = mne.chpi.compute_head_pos(raw.info, chpi_locs, dist_limit=0.005, gof_limit=0.95, adjust_dig=True)
+    else:
+        #args.headpos = mne.chpi.read_head_pos(args.headpos)
+        # get rid of cHPI signals if any:
+        raw=mne.chpi.filter_chpi(raw, include_line=True)
+        head_pos = None
 
     ## ---------------------------------------------------------
-    ## Application of OTP:
+    ## Application of OTP on raw data:
     #raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
-    #info = mne.io.read_info(raw_name)
 
     ## ---------------------------------------------------------
-    ## Apply TSSS on the data:
-    # load head movement (can be replaced by Python functions?)
-    # mne.chpi.compute_chpi_locs() and mne.chpi.compute_head_pos()
-    if not args.headpos==None:
-        try:
-            args.headpos = mne.chpi.read_head_pos(args.headpos)
-        except:
-            print("Could not load head position from " + str(args.headpos))
+    ## Apply TSSS on raw data:
     dest_info=mne.io.read_info(args.dest)
     destination=dest_info['dev_head_t']['trans'][0:3,3]
     raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
                 st_duration=10, st_correlation=0.999, coord_frame="head",
-                destination=destination, head_pos=args.headpos)
+                destination=destination, head_pos=head_pos)
 
-    # Filter and resample the raw data as needed:
+    ## ---------------------------------------------------------
+    ## Filter and resample the raw data as needed:
     # Low-pass:
     if args.high_freq==0 and args.combine_files:
         args.high_freq=raw.info['h_freq'] / len(file_list)
@@ -168,11 +173,6 @@ for rawfile in file_list[0]:
     # Ask to verify ECG components
     print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
-    #ecg_user = input("Are these components valid? (\"y\" or give #ICA to use)")
-    #if ecg_user=="y":
-    #    ica.exclude += ecg_inds[:n_max_ecg]
-    #else:
-    #    ica.exclude += ecg_user
     # Identify EOG components:
     n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
@@ -189,21 +189,17 @@ for rawfile in file_list[0]:
     # Ask to verify EOG components
     print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
-    #eog_user = input("Are these components valid? (\"y\" or give #ICA to use)")
-    #if eog_user=="y":
-    #    ica.exclude += eog_inds[:n_max_eog]
-    #else:
-    #    ica.exclude += eog_user
-
     ## # TODO:
     # Show all the other components
     # Ask for other components to be rejected
-
     # Apply ICA solution to the data:
     print("Excluding the following ICA components:\n" + str(ica.exclude))
     raw = ica.apply(raw)
     # Save ICA solution:
     ica.save(ica_file)
+    # compare before/after processing:
+    print("\nPlease check the data {}:".format(str(rawfile)))
+    compare_raws.main([raw_orig, raw.copy()])
     # Save the final ICA-OTP-SSS pre-processed data
     raw.save(result_file, overwrite=True)
     print("\nProcessed and saved file {}\n".format(result_file))
@@ -215,8 +211,6 @@ if args.combine_files:
         os.remove(result_file)
     raw.save(result_files[0], overwrite=True)
     result_files=result_files[0]
-print("\nPlease check the data:")
-# ADD visualization/comparison here
 print("\nProduced the following final data files:")
 print(result_files)
 print("\nThank you for waiting!")
