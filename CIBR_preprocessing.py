@@ -138,12 +138,16 @@ for rawfile in file_list[0]:
         print("\nHigh-pass frequency: {}\n".format(raw.info["highpass"]))
     if args.sfreq > 0:
         raw.resample(args.sfreq)
+        raw_orig.resample(args.sfreq)
         raw.info["fs"]=args.sfreq
+        raw_orig.info["fs"]=args.sfreq
         print("\nSampling frequency: {}\n".format(raw.info["fs"]))
     elif args.combine_files==True:
         args.sfreq=raw.info['fs'] / len(file_list)
         raw.resample(args.sfreq)
+        raw_orig.resample(args.sfreq)
         raw.info["fs"]=args.sfreq
+        raw_orig.info["fs"]=args.sfreq
         print("\nSampling frequency: {}\n".format(raw.info["fs"]))
 
     # Save intermediate results to a temporary file:
@@ -197,9 +201,9 @@ for rawfile in file_list[0]:
     raw = ica.apply(raw)
     # Save ICA solution:
     ica.save(ica_file)
-    # compare before/after processing:
+    # Compare changes before/after processing:
     print("\nPlease check the data {}:".format(str(rawfile)))
-    compare_raws.main([raw_orig, raw.copy()])
+    compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
     # Save the final ICA-OTP-SSS pre-processed data
     raw.save(result_file, overwrite=True)
     print("\nProcessed and saved file {}\n".format(result_file))
