@@ -130,7 +130,7 @@ for rawfile in file_list[0]:
     if args.high_freq>0:
         raw.filter(h_freq=args.high_freq, l_freq=None)
         raw.info['lowpass']=args.high_freq
-        print(/n"Low-pass frequency: {}"/n.format(raw.info["lowpass"]))
+        print("\nLow-pass frequency: {}\n".format(raw.info["lowpass"]))
     # High-pass
     if args.low_freq>0:
         raw.filter(h_freq=None, l_freq=args.low_freq)
@@ -202,11 +202,11 @@ for rawfile in file_list[0]:
     # Save ICA solution:
     ica.save(ica_file)
     # Compare changes before/after processing:
-    print(\n"Please check the data {}:"\n.format(str(rawfile)))
+    print("\nPlease check the data {}:\n".format(str(rawfile)))
     compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
     # Save the final ICA-OTP-SSS pre-processed data
     raw.save(result_file, overwrite=True)
-    print(\n"Processed and saved file {}"\n.format(result_file))
+    print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
 if args.combine_files:
     raw = mne.io.read_raw_fif(result_files[0])
