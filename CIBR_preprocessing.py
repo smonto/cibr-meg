@@ -66,7 +66,7 @@ args = parser.parse_args()
 ## Find the files to be processed and build paths:
 file_list = [glob(f) for f in args.fnames]
 print("Found files: %s" % file_list[0])
-
+_ = input("Press Enter if this is ok.")
 target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
 os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
