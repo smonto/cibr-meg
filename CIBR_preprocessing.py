@@ -67,7 +67,7 @@ args = parser.parse_args()
 file_list = [glob(f) for f in args.fnames]
 print("Found files: %s" % file_list[0])
 
-target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1])
+target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
 os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
 os.makedirs(path_to_tmp_files, exist_ok=True)
