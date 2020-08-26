@@ -21,7 +21,7 @@ Expected arguments:
 - files to be processed (in current directory; wildcards accepted)
 Optional:
 --bad: bad channel names, separated by space (automatic if not given)
---dest: reference head position file for head position alignment
+--dest: reference head position file (or coordinates) for head position transformation
 --headpos: do movement compensation?
 --lp: new low-pass frequency (automatic)
 --hp: new high-pass frequency (automatic)
@@ -88,6 +88,8 @@ for rawfile in file_list[0]:
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     raw_orig = deepcopy(raw)
+    # fix MAG coil type codes to avoid warning messages:
+    raw.fix_mag_coil_types()
     # Bad channels
     if args.bad_chs==[]:
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
@@ -96,9 +98,19 @@ for rawfile in file_list[0]:
         args.bad_chs = noisy_chs + flat_chs
     raw.info['bads'].extend(args.bad_chs)
     print("Bad channels: {}".format(raw.info["bads"]))
-    # fix MAG coil type codes to avoid warning messages:
-    raw.fix_mag_coil_types()
 
+    ## ---------------------------------------------------------
+    ## Application of OTP on raw data:
+    #raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
+
+    ## Prepare head position transform
+    if os.path.isfile(args.dest):
+        dest_info=mne.io.read_info(args.dest)
+        destination=dest_info['dev_head_t']['trans'][0:3,3]
+    elif args.dest is not None:
+        destination=args.dest
+
+    ## Prepare head movement compensation
     if args.headpos==True:
         # Load cHPI and head movement:
         chpi_amp = mne.compute_chpi_amplitudes(raw, t_step_min=0.01, t_window=0.2)
@@ -106,18 +118,12 @@ for rawfile in file_list[0]:
         head_pos = mne.chpi.compute_head_pos(raw.info, chpi_locs, dist_limit=0.005, gof_limit=0.95, adjust_dig=True)
     else:
         #args.headpos = mne.chpi.read_head_pos(args.headpos)
-        # get rid of cHPI signals if any:
+        # just get rid of cHPI signals if any:
         raw=mne.chpi.filter_chpi(raw, include_line=True)
         head_pos = None
 
     ## ---------------------------------------------------------
-    ## Application of OTP on raw data:
-    #raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
-
-    ## ---------------------------------------------------------
     ## Apply TSSS on raw data:
-    dest_info=mne.io.read_info(args.dest)
-    destination=dest_info['dev_head_t']['trans'][0:3,3]
     raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
                 st_duration=10, st_correlation=0.999, coord_frame="head",
                 destination=destination, head_pos=head_pos)
