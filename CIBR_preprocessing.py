@@ -104,10 +104,12 @@ for rawfile in file_list[0]:
     #raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
 
     ## Prepare head position transform
-    if os.path.isfile(args.dest):
+    #if args.dest is not None:
+    #    if os.path.isfile(args.dest):
+    try:
         dest_info=mne.io.read_info(args.dest)
         destination=dest_info['dev_head_t']['trans'][0:3,3]
-    elif args.dest is not None:
+    except:
         destination=args.dest
 
     ## Prepare head movement compensation
