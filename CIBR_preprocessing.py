@@ -1,11 +1,11 @@
 """
-@author: analexan, sipemont (JYU, CIBR)
+author: sipemont (JYU, CIBR)
+Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-250820
+260820
 
 To do:
-- final signal visualization for user to check
 - check that cHPI are subtracted by Maxwell filter
 
 --------------------------------------------------------------
@@ -92,6 +92,7 @@ for rawfile in file_list[0]:
     raw.fix_mag_coil_types()
     # Bad channels
     if args.bad_chs==[]:
+        print("\nLooking for bad channels...\n")
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
                 raw.copy().filter(None, 40), origin='auto', calibration=cal,
                 cross_talk=ctc, skip_by_annotation=['edge', 'bad_acq_skip'])
@@ -104,8 +105,6 @@ for rawfile in file_list[0]:
     #raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
 
     ## Prepare head position transform
-    #if args.dest is not None:
-    #    if os.path.isfile(args.dest):
     try:
         dest_info=mne.io.read_info(args.dest)
         destination=dest_info['dev_head_t']['trans'][0:3,3]
@@ -210,7 +209,7 @@ for rawfile in file_list[0]:
     # Save ICA solution:
     ica.save(ica_file)
     # Compare changes before/after processing:
-    print("\nPlease check the data {}:\n".format(str(rawfile)))
+    print("\nChecking the data {}:\n".format(str(rawfile)))
     compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
     # Save the final ICA-OTP-SSS pre-processed data
     raw.save(result_file, overwrite=True)
