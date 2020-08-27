@@ -135,7 +135,7 @@ for rawfile in file_list:
     ## Filter and resample the raw data as needed:
     # Low-pass:
     if args.high_freq==0 and args.combine_files:
-        args.high_freq=raw.info['h_freq'] / len(file_list)
+        args.high_freq=raw.info['highpass'] / len(file_list)
     if args.high_freq>0:
         raw.filter(h_freq=args.high_freq, l_freq=None)
         raw.info['lowpass']=args.high_freq
@@ -152,11 +152,11 @@ for rawfile in file_list:
         raw_orig.info["fs"]=args.sfreq
         print("\nSampling frequency: {}\n".format(raw.info["fs"]))
     elif args.combine_files==True:
-        args.sfreq=raw.info['fs'] / len(file_list)
+        args.sfreq=raw.info['sfreq'] / len(file_list)
         raw.resample(args.sfreq)
         raw_orig.resample(args.sfreq)
-        raw.info["fs"]=args.sfreq
-        raw_orig.info["fs"]=args.sfreq
+        raw.info["sfreq"]=args.sfreq
+        raw_orig.info["sfreq"]=args.sfreq
         print("\nSampling frequency: {}\n".format(raw.info["fs"]))
 
     # Save intermediate results to a temporary file:
