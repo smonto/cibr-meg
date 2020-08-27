@@ -37,7 +37,7 @@ folder "preprocessed_<folder_name>". Intermediate results will be saved under
 #path_to_bads  = '/autocibr/cibr/projects/password/data/raw/annamaria/files/kogn/bads/'
 import mne
 import os
-from glob import glob
+#from glob import glob
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
 from argparse import ArgumentParser
 from matplotlib.pyplot import show
