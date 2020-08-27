@@ -65,7 +65,6 @@ args = parser.parse_args()
 ## ---------------------------------------------------------
 ## Find the files to be processed and build paths:
 file_list = [glob(f) for f in args.fnames]
-print("Found files: %s" % file_list[0])
 print("Found files: %s" % file_list)
 _ = input("Press Enter if this is ok.")
 target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
@@ -75,7 +74,7 @@ os.makedirs(path_to_tmp_files, exist_ok=True)
 path_to_ICA = os.path.join(target_dir, 'ICA/')
 os.makedirs(path_to_ICA, exist_ok=True)
 
-for rawfile in file_list[0]:
+for rawfile in file_list:
     fs = rawfile.split(".")
     raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
@@ -85,7 +84,7 @@ result_files=list() # collects result file names
 
 ## ---------------------------------------------------------
 ## Start processing loop for each file
-for rawfile in file_list[0]:
+for rawfile in file_list:
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     raw_orig = deepcopy(raw)
