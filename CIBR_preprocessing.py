@@ -114,7 +114,7 @@ for rawfile in file_list:
     ## Prepare head movement compensation
     if args.headpos==True:
         # Load cHPI and head movement:
-        chpi_amp = mne.compute_chpi_amplitudes(raw, t_step_min=0.01, t_window=0.2)
+        chpi_amp = mne.chpi.compute_chpi_amplitudes(raw, t_step_min=0.01, t_window=0.2)
         chpi_locs = mne.chpi.compute_chpi_locs(raw.info, chpi_amp, t_step_max=0.5, too_close='raise', adjust_dig=True)
         head_pos = mne.chpi.compute_head_pos(raw.info, chpi_locs, dist_limit=0.005, gof_limit=0.95, adjust_dig=True)
     else:
