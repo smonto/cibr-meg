@@ -182,7 +182,7 @@ for rawfile in file_list:
     except IndexError as exc:
         raise
     except ValueError as exc:
-        raise
+        print("\nNo ICA components found for ECG.\n")
     # Ask to verify ECG components
     print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
@@ -198,7 +198,7 @@ for rawfile in file_list:
     except IndexError as exc:
         raise
     except ValueError as exc:
-        raise
+        print("\nNo ICA components found for EOG.\n")
     # Ask to verify EOG components
     print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
