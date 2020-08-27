@@ -7,6 +7,7 @@ Edited:
 
 To do:
 - check that cHPI are subtracted by Maxwell filter
+- how to confirm the order of files when combining?
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -64,7 +65,8 @@ args = parser.parse_args()
 
 ## ---------------------------------------------------------
 ## Find the files to be processed and build paths:
-file_list = [glob(f) for f in args.fnames]
+#file_list = [glob(f) for f in args.fnames]
+file_list = args.fnames
 print("Found files: %s" % file_list)
 _ = input("Press Enter if this is ok.")
 target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
