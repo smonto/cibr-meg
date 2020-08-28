@@ -58,7 +58,7 @@ def main(raws):
     fig.tight_layout()
     plt.show()
     # Don't quit before plots have been drawn
-    _ = input('Have a nice day.')
+    _ = input('Have a nice day (press a key to continue).')
 
 # execute this code only when the script is run directly from command line
 if __name__ == '__main__':

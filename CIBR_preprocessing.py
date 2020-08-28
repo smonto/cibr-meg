@@ -76,17 +76,17 @@ os.makedirs(path_to_tmp_files, exist_ok=True)
 path_to_ICA = os.path.join(target_dir, 'ICA/')
 os.makedirs(path_to_ICA, exist_ok=True)
 
-for rawfile in file_list:
-    fs = rawfile.split(".")
-    raw_name = fs[0] + '.fif'
-    ica_file = path_to_ICA + fs[0] + '_ICA.fif';
-    tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
-    result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
 result_files=list() # collects result file names
 
 ## ---------------------------------------------------------
 ## Start processing loop for each file
 for rawfile in file_list:
+    # set up names:
+    fs = rawfile.split(".")
+    raw_name = fs[0] + '.fif'
+    ica_file = path_to_ICA + fs[0] + '_ICA.fif';
+    tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
+    result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     raw_orig = deepcopy(raw)
