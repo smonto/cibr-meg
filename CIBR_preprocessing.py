@@ -98,6 +98,7 @@ for rawfile in file_list:
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     if args.debug:
+        print("\nCropping data to 30 s in debug mode.\n")
         raw.crop(10,40)
     raw_orig = deepcopy(raw)
     # fix MAG coil type codes to avoid warning messages:
@@ -159,16 +160,16 @@ for rawfile in file_list:
     if args.sfreq > 0:
         raw.resample(args.sfreq)
         raw_orig.resample(args.sfreq)
-        raw.info["fs"]=args.sfreq
-        raw_orig.info["fs"]=args.sfreq
-        print("\nSampling frequency: {}\n".format(raw.info["fs"]))
+        raw.info["sfreq"]=args.sfreq
+        raw_orig.info["sfreq"]=args.sfreq
+        print("\nSampling frequency: {}\n".format(raw.info["sfreq"]))
     elif args.combine_files==True:
-        args.sfreq=raw.info['fs'] / len(file_list)
+        args.sfreq=raw.info['sfreq'] / len(file_list)
         raw.resample(args.sfreq)
         raw_orig.resample(args.sfreq)
-        raw.info["fs"]=args.sfreq
-        raw_orig.info["fs"]=args.sfreq
-        print("\nSampling frequency: {}\n".format(raw.info["fs"]))
+        raw.info["sfreq"]=args.sfreq
+        raw_orig.info["sfreq"]=args.sfreq
+        print("\nSampling frequency: {}\n".format(raw.info["sfreq"]))
 
     # Save intermediate results to a temporary file:
     if not args.debug:
