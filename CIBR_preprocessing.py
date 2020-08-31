@@ -100,7 +100,7 @@ for rawfile in file_list:
     if args.debug:
         print("\nCropping data to 30 s in debug mode.\n")
         raw.crop(10,40)
-    raw_orig = deepcopy(raw)
+    raw_orig = deepcopy(raw).load_data().apply_proj()
     # fix MAG coil type codes to avoid warning messages:
     raw.fix_mag_coil_types()
     # Bad channels
@@ -192,6 +192,7 @@ for rawfile in file_list:
     print('Found {} ECG component(s)'.format(len(ecg_inds)))
     try:
         if args.debug:
+            print("\nShowing all ICA components in debug mode\n")
             ica.plot_components(ch_type='mag', inst=raw, show=False)
         else:
             ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
@@ -211,6 +212,7 @@ for rawfile in file_list:
     print('Found {} EOG component(s)'.format(len(eog_inds)))
     try:
         if args.debug:
+            print("\nShowing all ICA components in debug mode\n")
             ica.plot_components(ch_type='mag', inst=raw, show=False)
         else:
             ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
@@ -234,17 +236,16 @@ for rawfile in file_list:
     print("\nChecking the data {}:\n".format(str(rawfile)))
     compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
     # Save the final ICA-OTP-SSS pre-processed data
-    if not args.debug:
-        raw.save(result_file, overwrite=True)
-        print("\nProcessed and saved file {}\n".format(result_file))
+    raw.save(result_file, overwrite=True)
+    print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
 if args.combine_files:
     raw = mne.io.read_raw_fif(result_files[0])
     for result_file in result_files[1:]:
         raw.append(mne.io.read_raw_fif(result_file))
         os.remove(result_file)
-    if not args.debug:
-        raw.save(result_files[0], overwrite=True)
+    #if not args.debug:
+    raw.save(result_files[0], overwrite=True)
     result_files=result_files[0]
 print("\nProduced the following final data files:")
 print(result_files)
