@@ -76,7 +76,7 @@ print("Found files: %s" % file_list)
 proceed = input("Press n if this is not ok.")
 if proceed=="n":
     print("Stopping...")
-    exit(0)
+    sys.exit(0)
 target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
 os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
