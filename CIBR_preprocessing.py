@@ -73,7 +73,7 @@ file_list = args.fnames
 # Order the files:
 file_list = Tcl().call('lsort', '-dict', file_list)
 print("Found files (in order): %s" % file_list)
-proceed = input("Press "n" if this is not ok.")
+proceed = input("Press n if this is not ok.")
 if proceed=="n":
     print("Stopping...")
     sys.exit(0)
