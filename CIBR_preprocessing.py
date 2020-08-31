@@ -147,7 +147,7 @@ for rawfile in file_list:
     ## Filter and resample the raw data as needed:
     # Low-pass:
     if args.high_freq==0 and args.combine_files:
-        args.high_freq=raw.info['highpass'] / len(file_list)
+        args.high_freq=raw.info['lowpass'] / len(file_list)
     if args.high_freq>0:
         raw.filter(h_freq=args.high_freq, l_freq=None)
         raw.info['lowpass']=args.high_freq
