@@ -236,7 +236,7 @@ for rawfile in file_list:
     # Save the final ICA-OTP-SSS pre-processed data
     if not args.debug:
         raw.save(result_file, overwrite=True)
-    print("\nProcessed and saved file {}\n".format(result_file))
+        print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
 if args.combine_files:
     raw = mne.io.read_raw_fif(result_files[0])
