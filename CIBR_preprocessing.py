@@ -95,6 +95,8 @@ for rawfile in file_list:
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
     tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
     result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
+    if args.combine_files:
+        combined_filename = target_dir + 'OTP_TSSS_ICA_' + 'combined' + '.fif'
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     if args.debug:
@@ -215,7 +217,7 @@ for rawfile in file_list:
             print("\nShowing all ICA components in debug mode\n")
             ica.plot_components(ch_type='mag', inst=raw, show=False)
         else:
-            ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
+            ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
     except IndexError as exc:
         raise
     except ValueError as exc:
@@ -236,6 +238,7 @@ for rawfile in file_list:
     print("\nChecking the data {}:\n".format(str(rawfile)))
     compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
     # Save the final ICA-OTP-SSS pre-processed data
+    #if not args.debug:
     raw.save(result_file, overwrite=True)
     print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
@@ -245,8 +248,10 @@ if args.combine_files:
         raw.append(mne.io.read_raw_fif(result_file))
         os.remove(result_file)
     #if not args.debug:
-    raw.save(result_files[0], overwrite=True)
-    result_files=result_files[0]
+    raw.save(combined_filename, overwrite=True)
+    del raw
+    os.remove(result_files[0])
+    result_files=combined_filename
 print("\nProduced the following final data files:")
 print(result_files)
 print("\nThank you for waiting!")
