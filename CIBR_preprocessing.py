@@ -7,6 +7,8 @@ Edited:
 
 To do:
 - check that cHPI are subtracted by Maxwell filter
+- Ask for other components to be rejected?
+
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -34,7 +36,6 @@ folder "preprocessed_<folder_name>". Intermediate results will be saved under
 "tmp" and "ICA" folders.
 """
 
-#path_to_bads  = '/autocibr/cibr/projects/password/data/raw/annamaria/files/kogn/bads/'
 import mne
 import os
 #from glob import glob
@@ -83,13 +84,12 @@ path_to_tmp_files = os.path.join(target_dir, 'tmp/')
 os.makedirs(path_to_tmp_files, exist_ok=True)
 path_to_ICA = os.path.join(target_dir, 'ICA/')
 os.makedirs(path_to_ICA, exist_ok=True)
-
 result_files=list() # collects result file names
 
 ## ---------------------------------------------------------
 ## Start processing loop for each file
 for rawfile in file_list:
-    # set up names:
+    # Set up names:
     fs = rawfile.split(".")
     raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
@@ -97,15 +97,15 @@ for rawfile in file_list:
     result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
     if args.combine_files:
         combined_filename = target_dir + 'OTP_TSSS_ICA_' + 'combined' + '.fif'
-    ## Read from file:
+    # Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     if args.debug:
         print("\nCropping data to 30 s in debug mode.\n")
         raw.crop(10,40)
     raw_orig = deepcopy(raw).load_data().apply_proj()
-    # fix MAG coil type codes to avoid warning messages:
+    # Fix MAG coil type codes to avoid warning messages:
     raw.fix_mag_coil_types()
-    # Bad channels
+    # Bad channels search using Maxwell filtering:
     if args.bad_chs==[]:
         print("\nLooking for bad channels...\n")
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
@@ -120,6 +120,7 @@ for rawfile in file_list:
     if not args.debug:
         raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
 
+    ## ---------------------------------------------------------
     ## Prepare head position transform
     try:
         dest_info=mne.io.read_info(args.dest)
@@ -127,6 +128,7 @@ for rawfile in file_list:
     except:
         destination=args.dest
 
+    ## ---------------------------------------------------------
     ## Prepare head movement compensation
     if args.headpos==True:
         # Load cHPI and head movement:
@@ -154,11 +156,12 @@ for rawfile in file_list:
         raw.filter(h_freq=args.high_freq, l_freq=None)
         raw.info['lowpass']=args.high_freq
         print("\nLow-pass frequency: {} Hz\n".format(raw.info["lowpass"]))
-    # High-pass
+    # High-pass:
     if args.low_freq>0:
         raw.filter(h_freq=None, l_freq=args.low_freq)
         raw.info['highpass']=args.low_freq
         print("\nHigh-pass frequency: {} Hz\n".format(raw.info["highpass"]))
+    # Re-sampling :
     if args.sfreq > 0:
         raw.resample(args.sfreq)
         raw_orig.resample(args.sfreq)
@@ -185,6 +188,7 @@ for rawfile in file_list:
                           stim=False, exclude='bads')
     ica.fit(raw, picks=ica_picks, decim=2)
     pyplot_ion()
+
     # Identify ECG components:
     n_max_ecg = 3  # use max 3 components
     ecg_epochs = create_ecg_epochs(raw, tmin=-0.5, tmax=0.5)
@@ -205,6 +209,7 @@ for rawfile in file_list:
     # Ask to verify ECG components
     print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
+
     # Identify EOG components:
     n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
@@ -222,19 +227,18 @@ for rawfile in file_list:
     # Ask to verify EOG components
     print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
-    ## # TODO:
-    # Show all the other components
-    # Ask for other components to be rejected
+
     # Apply ICA solution to the data:
     print("Excluding the following ICA components:\n" + str(ica.exclude))
     raw = ica.apply(raw)
     # Save ICA solution:
     if not args.debug:
         ica.save(ica_file)
+
     # Compare changes before/after processing:
     print("\nChecking the data {}:\n".format(str(rawfile)))
     compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
-    # Save the final ICA-OTP-SSS pre-processed data
+    # Save the final ICA-OTP-SSS pre-processed data:
     #if not args.debug:
     raw.save(result_file, overwrite=True)
     print("\nProcessed and saved file {}\n".format(result_file))
