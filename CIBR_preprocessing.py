@@ -213,10 +213,7 @@ for rawfile in file_list:
     ica.exclude += eog_inds
     print('Found {} EOG component(s)'.format(len(eog_inds)))
     try:
-        if args.debug:
-            print("\nShowing all ICA components in debug mode\n")
-            ica.plot_components(ch_type='mag', inst=raw, show=False)
-        else:
+        if not args.debug:
             ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
     except IndexError as exc:
         raise
@@ -243,9 +240,9 @@ for rawfile in file_list:
     print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
 if args.combine_files:
-    raw = mne.io.read_raw_fif(result_files[0])
+    raw = mne.io.read_raw_fif(result_files[0], preload=True)
     for result_file in result_files[1:]:
-        raw.append(mne.io.read_raw_fif(result_file))
+        raw.append(mne.io.read_raw_fif(result_file, preload=True))
         os.remove(result_file)
     #if not args.debug:
     raw.save(combined_filename, overwrite=True)
