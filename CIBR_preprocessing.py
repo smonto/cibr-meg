@@ -43,6 +43,8 @@ from argparse import ArgumentParser
 from matplotlib.pyplot import show
 from matplotlib.pyplot import ion as pyplot_ion
 from copy import deepcopy
+#from collections import OrderedDict
+from tkinter import Tcl
 import sys
 sys.path.append("/opt/tools/cibr-meg/")
 import compare_raws
@@ -61,14 +63,20 @@ parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new samplin
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
 parser.add_argument("--combine", default=False, dest='combine_files', action='store_const', const=True, help="combine all files or not")
+parser.add_argument("--debug", default=False, dest='debug', action='store_const', const=True)
 args = parser.parse_args()
 
 ## ---------------------------------------------------------
 ## Find the files to be processed and build paths:
 #file_list = [glob(f) for f in args.fnames]
 file_list = args.fnames
+# Order the files:
+file_list2 = Tcl().call('lsort', '-dict', file_list)
 print("Found files: %s" % file_list)
-_ = input("Press Enter if this is ok.")
+proceed = input("Press n if this is not ok.")
+if proceed=="n":
+    print("Stopping...")
+    exit(0)
 target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
 os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
@@ -152,11 +160,11 @@ for rawfile in file_list:
         raw_orig.info["fs"]=args.sfreq
         print("\nSampling frequency: {}\n".format(raw.info["fs"]))
     elif args.combine_files==True:
-        args.sfreq=raw.info['sfreq'] / len(file_list)
+        args.sfreq=raw.info['fs'] / len(file_list)
         raw.resample(args.sfreq)
         raw_orig.resample(args.sfreq)
-        raw.info["sfreq"]=args.sfreq
-        raw_orig.info["sfreq"]=args.sfreq
+        raw.info["fs"]=args.sfreq
+        raw_orig.info["fs"]=args.sfreq
         print("\nSampling frequency: {}\n".format(raw.info["fs"]))
 
     # Save intermediate results to a temporary file:
@@ -166,9 +174,9 @@ for rawfile in file_list:
     ## Do ICA on the preprocessed data, mainly to remove EOG and ECG
     raw.info['bads'] = []
     ica = ICA(n_components=0.95, method='fastica', random_state=1, max_iter=1000)
-    picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=False,
+    ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
                           stim=False, exclude='bads')
-    ica.fit(raw, decim=2)
+    ica.fit(raw, picks=ica_picks, decim=2)
     pyplot_ion()
     # Identify ECG components:
     n_max_ecg = 3  # use max 3 components
@@ -178,7 +186,10 @@ for rawfile in file_list:
     ica.exclude += ecg_inds
     print('Found {} ECG component(s)'.format(len(ecg_inds)))
     try:
-        ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
+        if debug:
+            ica.plot_components(ch_type='mag', inst=raw, show=False)
+        else:
+            ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
     except IndexError as exc:
         raise
     except ValueError as exc:
@@ -194,7 +205,10 @@ for rawfile in file_list:
     ica.exclude += eog_inds
     print('Found {} EOG component(s)'.format(len(eog_inds)))
     try:
-        ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
+        if debug:
+            ica.plot_components(ch_type='mag', inst=raw, show=False)
+        else:
+            ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
     except IndexError as exc:
         raise
     except ValueError as exc:
