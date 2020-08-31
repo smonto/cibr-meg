@@ -3,11 +3,10 @@ author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-260820
+310820
 
 To do:
 - check that cHPI are subtracted by Maxwell filter
-- how to confirm the order of files when combining?
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -28,6 +27,7 @@ Optional:
 --hp: new high-pass frequency (automatic)
 --fs: new resampling frequency (automatic)
 --combine: combine input files to single output?
+--debug: for testing mode
 
 The final pre-processed data will be saved under the original data in
 folder "preprocessed_<folder_name>". Intermediate results will be saved under
@@ -71,9 +71,9 @@ args = parser.parse_args()
 #file_list = [glob(f) for f in args.fnames]
 file_list = args.fnames
 # Order the files:
-file_list2 = Tcl().call('lsort', '-dict', file_list)
-print("Found files: %s" % file_list)
-proceed = input("Press n if this is not ok.")
+file_list = Tcl().call('lsort', '-dict', file_list)
+print("Found files (in order): %s" % file_list)
+proceed = input("Press "n" if this is not ok.")
 if proceed=="n":
     print("Stopping...")
     sys.exit(0)
@@ -97,6 +97,8 @@ for rawfile in file_list:
     result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
     ## Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
+    if args.debug:
+        raw.crop(10,40)
     raw_orig = deepcopy(raw)
     # fix MAG coil type codes to avoid warning messages:
     raw.fix_mag_coil_types()
@@ -112,7 +114,8 @@ for rawfile in file_list:
 
     ## ---------------------------------------------------------
     ## Application of OTP on raw data:
-    #raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
+    if not args.debug:
+        raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
 
     ## Prepare head position transform
     try:
@@ -168,7 +171,8 @@ for rawfile in file_list:
         print("\nSampling frequency: {}\n".format(raw.info["fs"]))
 
     # Save intermediate results to a temporary file:
-    raw.save(tmp_file, overwrite=True)
+    if not args.debug:
+        raw.save(tmp_file, overwrite=True)
 
     ## ---------------------------------------------------------
     ## Do ICA on the preprocessed data, mainly to remove EOG and ECG
@@ -223,12 +227,14 @@ for rawfile in file_list:
     print("Excluding the following ICA components:\n" + str(ica.exclude))
     raw = ica.apply(raw)
     # Save ICA solution:
-    ica.save(ica_file)
+    if not args.debug:
+        ica.save(ica_file)
     # Compare changes before/after processing:
     print("\nChecking the data {}:\n".format(str(rawfile)))
     compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
     # Save the final ICA-OTP-SSS pre-processed data
-    raw.save(result_file, overwrite=True)
+    if not args.debug:
+        raw.save(result_file, overwrite=True)
     print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
 if args.combine_files:
@@ -236,7 +242,8 @@ if args.combine_files:
     for result_file in result_files[1:]:
         raw.append(mne.io.read_raw_fif(result_file))
         os.remove(result_file)
-    raw.save(result_files[0], overwrite=True)
+    if not args.debug:
+        raw.save(result_files[0], overwrite=True)
     result_files=result_files[0]
 print("\nProduced the following final data files:")
 print(result_files)
