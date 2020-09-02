@@ -41,22 +41,23 @@ def prepare_raw_for_changes(raws):
     raw = mne.io.RawArray(data, new_info)
     return raw
 
-def main(raws):
+def main(raws, plot_psd=True):
     # use helper function to prepare a combination raw
     # where the channels are interleaved
     combined_raw = prepare_raw_for_changes(raws)
     print("Plotting time series")
     combined_raw.plot(block=True)
-    print("Plotting PSD's")
-    # Also plot power spectral densities
-    fig, axes = plt.subplots(len(raws), 2, sharex=True, sharey=True)
-    for idx, raw in enumerate(raws):
-        raw.plot_psd(fmax=raw.info['lowpass'],
-                     ax=axes[idx, :], show=False)
-        axes[idx, 0].set_xlabel('Magnetometer frequency')
-        axes[idx, 1].set_xlabel('Gradiometer frequency')
-    fig.tight_layout()
-    plt.show()
+    if plot_psd:
+        print("Plotting PSD's")
+        # Also plot power spectral densities
+        fig, axes = plt.subplots(len(raws), 2, sharex=True, sharey=True)
+        for idx, raw in enumerate(raws):
+            raw.plot_psd(fmax=raw.info['lowpass'],
+                         ax=axes[idx, :], show=False)
+            axes[idx, 0].set_xlabel('Magnetometer frequency')
+            axes[idx, 1].set_xlabel('Gradiometer frequency')
+        fig.tight_layout()
+        plt.show()
 
 # execute this code only when the script is run directly from command line
 if __name__ == '__main__':
