@@ -7,7 +7,7 @@ Edited:
 
 To do:
 - check that cHPI are subtracted by Maxwell filter
-- Ask for other components to be rejected?
+- Ask for other ICA components to be rejected?
 
 
 --------------------------------------------------------------
