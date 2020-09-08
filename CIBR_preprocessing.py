@@ -8,6 +8,7 @@ Edited:
 To do:
 - check that cHPI are subtracted by Maxwell filter
 - Ask for other ICA components to be rejected?
+- check thresholds for EOG ECG ICA
 - document more thoroughly what happens
 
 --------------------------------------------------------------
@@ -190,11 +191,10 @@ for rawfile in file_list:
     pyplot_ion()
 
     # Identify ECG components:
-    n_max_ecg = 3  # use max 3 components
+    #n_max_ecg = 3  # use max 3 components
     ecg_epochs = create_ecg_epochs(raw, tmin=-0.5, tmax=0.5)
     ecg_epochs.apply_baseline((-0.5, -0.2))
-    ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps')
-    ica.exclude += ecg_inds
+    ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps', threshold=0.25)
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
     try:
@@ -210,13 +210,13 @@ for rawfile in file_list:
     # Ask to verify ECG components
     print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
+    ica.exclude += ecg_inds
 
     # Identify EOG components:
-    n_max_eog = 3  # use max 3 components
+    #n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
     eog_epochs.apply_baseline((-0.5, -0.2))
-    eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
-    ica.exclude += eog_inds
+    eog_inds, scores_eog = ica.find_bads_eog(eog_epochs, threshold=0.25)
     print('Found {} EOG component(s)\n'.format(len(eog_inds)))
     print('The scores are: {}\n'.format(scores_eog))
     try:
@@ -229,9 +229,10 @@ for rawfile in file_list:
     # Ask to verify EOG components
     print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
+    ica.exclude += eog_inds
 
     # Apply ICA solution to the data:
-    print("Excluding the following ICA components:\n" + str(ica.exclude))
+    print("\nExcluding the following ICA components: " + str(ica.exclude))
     raw = ica.apply(raw)
     # Save ICA solution:
     if not args.debug:
