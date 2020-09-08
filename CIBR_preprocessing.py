@@ -74,7 +74,7 @@ args = parser.parse_args()
 file_list = args.fnames
 # Order the files:
 file_list = tuple(Tcl().call('lsort', '-dict', file_list))
-print("Found files (in order): %s" % file_list)
+print("Found files (in order): {}".format(file_list))
 proceed = input("Press n if this is not ok, enter to accept.")
 if proceed=="n":
     print("Stopping...")
