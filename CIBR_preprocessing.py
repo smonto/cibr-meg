@@ -64,7 +64,7 @@ class Logger(object):
         #this flush method is needed for python 3 compatibility.
         #this handles the flush command by doing nothing.
         #you might want to specify some extra behavior here.
-        pass    
+        pass
 sys.stdout = Logger()
 """
 
@@ -209,9 +209,9 @@ for rawfile in file_list:
 
     # Identify ECG components:
     #n_max_ecg = 3  # use max 3 components
-    ecg_epochs = create_ecg_epochs(raw, tmin=-0.5, tmax=0.5)
+    ecg_epochs = create_ecg_epochs(raw, tmin=-1.5, tmax=1.5)
     ecg_epochs.apply_baseline((-0.5, -0.2))
-    ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps', threshold=0.25)
+    ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps', threshold="auto")
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
     try:
@@ -233,7 +233,7 @@ for rawfile in file_list:
     #n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
     eog_epochs.apply_baseline((-0.5, -0.2))
-    eog_inds, scores_eog = ica.find_bads_eog(eog_epochs, threshold=0.25)
+    eog_inds, scores_eog = ica.find_bads_eog(eog_epochs, threshold="auto")
     print('Found {} EOG component(s)\n'.format(len(eog_inds)))
     print('The scores are: {}\n'.format(scores_eog))
     try:
