@@ -214,6 +214,7 @@ for rawfile in file_list:
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps', threshold="auto")
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
+    ecg_epochs.plot_joint()
     try:
         if args.debug:
             print("\nShowing all ICA components in debug mode\n")
@@ -233,9 +234,10 @@ for rawfile in file_list:
     #n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
     eog_epochs.apply_baseline((-0.5, -0.2))
-    eog_inds, scores_eog = ica.find_bads_eog(eog_epochs, threshold="auto")
+    eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)\n'.format(len(eog_inds)))
     print('The scores are: {}\n'.format(scores_eog))
+    eog_epochs.plot_joint()
     try:
         if not args.debug:
             ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
