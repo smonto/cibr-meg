@@ -214,7 +214,7 @@ for rawfile in file_list:
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs)
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
-    ecg_epochs.plot_joint()
+    ecg_epochs.average().plot_joint()
     try:
         if args.debug:
             print("\nShowing all ICA components in debug mode\n")
@@ -237,7 +237,7 @@ for rawfile in file_list:
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)\n'.format(len(eog_inds)))
     print('The scores are: {}\n'.format(scores_eog))
-    eog_epochs.plot_joint()
+    eog_epochs.average().plot_joint()
     try:
         if not args.debug:
             ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
