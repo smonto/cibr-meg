@@ -3,12 +3,12 @@ author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-310820
+030920
 
 To do:
 - check that cHPI are subtracted by Maxwell filter
 - Ask for other ICA components to be rejected?
-
+- document more thoroughly what happens
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -72,9 +72,9 @@ args = parser.parse_args()
 #file_list = [glob(f) for f in args.fnames]
 file_list = args.fnames
 # Order the files:
-file_list = list(Tcl().call('lsort', '-dict', file_list))
+file_list = tuple(Tcl().call('lsort', '-dict', file_list))
 print("Found files (in order): %s" % file_list)
-proceed = input("Press n if this is not ok.")
+proceed = input("Press n if this is not ok, enter to accept.")
 if proceed=="n":
     print("Stopping...")
     sys.exit(0)
