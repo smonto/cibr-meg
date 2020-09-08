@@ -211,7 +211,7 @@ for rawfile in file_list:
     #n_max_ecg = 3  # use max 3 components
     ecg_epochs = create_ecg_epochs(raw, tmin=-1.5, tmax=1.5)
     ecg_epochs.apply_baseline((-0.5, -0.2))
-    ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs, method='ctps', threshold="auto")
+    ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs)
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
     ecg_epochs.plot_joint()
