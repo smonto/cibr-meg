@@ -3,12 +3,13 @@ author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-030920
+090920
 
 To do:
 - check that cHPI are subtracted by Maxwell filter
 - Ask for other ICA components to be rejected?
 - check thresholds for EOG ECG ICA
+- option to use MAGs instead of EOG/ECG channels
 - document more thoroughly what happens
 
 --------------------------------------------------------------
@@ -16,7 +17,7 @@ This script is intended for MEG data pre-processing (cleaning).
 
 It consist of the following main steps:
 - oversampled temporal projection (OTP)
-- temporal signal subspace separation (TSSS)
+- Maxfilter with temporal signal subspace separation (SSS + TSSS)
 - independent component analysis (ICA)
 with possible head position tasks.
 
@@ -204,7 +205,8 @@ for rawfile in file_list:
     ica = ICA(n_components=0.99, method='fastica', random_state=1, max_iter=1000)
     ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
                                 ecog=True, stim=False, exclude='bads')
-    ica.fit(raw, picks=ica_picks, decim=2)
+    ica_reject = dict(grad=6000e-13, mag=6e-12)
+    ica.fit(raw.copy().filter(l_freq=1), picks=ica_picks, reject=ica_reject, decim=2)
     pyplot_ion()
 
     # Identify ECG components:
@@ -214,7 +216,7 @@ for rawfile in file_list:
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs)
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
-    ecg_epochs.average().plot_joint()
+    ecg_epochs.average().plot_joint(title="Averaged ECG epochs", picks='mag')
     try:
         if args.debug:
             print("\nShowing all ICA components in debug mode\n")
@@ -237,7 +239,7 @@ for rawfile in file_list:
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)\n'.format(len(eog_inds)))
     print('The scores are: {}\n'.format(scores_eog))
-    eog_epochs.average().plot_joint()
+    eog_epochs.average().plot_joint(title="Averaged EOG epochs", picks='mag')
     try:
         if not args.debug:
             ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
@@ -259,7 +261,7 @@ for rawfile in file_list:
 
     # Compare changes before/after processing:
     print("\nChecking the data {}:\n".format(str(rawfile)))
-    compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)])
+    compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)], plot_psd=False)
     # Save the final ICA-OTP-SSS pre-processed data:
     #if not args.debug:
     raw.save(result_file, overwrite=True)
