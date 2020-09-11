@@ -206,7 +206,7 @@ for rawfile in file_list:
     ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
                                 ecog=True, stim=False, exclude='bads')
     ica_reject = dict(grad=6000e-13, mag=6e-12)
-    ica.fit(raw.copy().filter(l_freq=1), picks=ica_picks, reject=ica_reject, decim=2)
+    ica.fit(raw.copy().filter(h_freq=None, l_freq=1), picks=ica_picks, reject=ica_reject, decim=2)
     pyplot_ion()
 
     # Identify ECG components:
