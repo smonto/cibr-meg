@@ -3,14 +3,15 @@ author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-090920
+180920
 
 To do:
-- check that cHPI are subtracted by Maxwell filter
-- Ask for other ICA components to be rejected?
+- ask for other ICA components to be rejected?
 - check thresholds for EOG ECG ICA
-- option to use MAGs instead of EOG/ECG channels
-- document more thoroughly what happens
+- option to use synthetic channels instead of EOG/ECG channels for ICA?
+- document more thoroughly what happens...
+- maxfilter-täppä paikalleen => kertoo Meggiellekin että mf tehty
+- miksi helppi näyttää hassusti _ch listan?
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -25,8 +26,8 @@ Expected arguments:
 - files to be processed (in current directory; wildcards accepted)
 Optional:
 --bad: bad channel names, separated by space (automatic if not given)
---dest: reference head position file (or coordinates) for head position transformation
---headpos: do movement compensation?
+--headpos: reference head position file (or coordinates) for head position transformation
+--movecomp: do movement compensation if cHPI on?
 --lp: new low-pass frequency (automatic)
 --hp: new high-pass frequency (automatic)
 --fs: new resampling frequency (automatic)
@@ -76,8 +77,8 @@ cal = '/neuro/databases/sss/sss_cal.dat'
 # Parse command arguments:
 parser = ArgumentParser()
 parser.add_argument("fnames", nargs="+", help="the files to be processed")
-parser.add_argument("--dest", dest='dest', help="reference head position file")
-parser.add_argument("--headpos", default=False, dest='headpos', action='store_const', const=True, help="head movement pos file")
+parser.add_argument("--headpos", dest='headpos', help="reference head position file")
+parser.add_argument("--movecomp", default=False, dest='movecomp', action='store_const', const=True, help="head movement pos file")
 parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list of bad channels in the files")
 parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
@@ -142,20 +143,20 @@ for rawfile in file_list:
     ## ---------------------------------------------------------
     ## Prepare head position transform
     try:
-        dest_info=mne.io.read_info(args.dest)
-        destination=dest_info['dev_head_t']['trans'][0:3,3]
+        headpos_info=mne.io.read_info(args.headpos)
+        destination=headpos_info['dev_head_t']['trans'][0:3,3]
     except:
-        destination=args.dest
+        destination=args.headpos
 
     ## ---------------------------------------------------------
     ## Prepare head movement compensation
-    if args.headpos==True:
+    if args.movecomp==True:
         # Load cHPI and head movement:
         chpi_amp = mne.chpi.compute_chpi_amplitudes(raw, t_step_min=0.01, t_window=0.2)
         chpi_locs = mne.chpi.compute_chpi_locs(raw.info, chpi_amp, t_step_max=0.5, too_close='raise', adjust_dig=True)
         head_pos = mne.chpi.compute_head_pos(raw.info, chpi_locs, dist_limit=0.005, gof_limit=0.95, adjust_dig=True)
     else:
-        #args.headpos = mne.chpi.read_head_pos(args.headpos)
+        #args.movecomp = mne.chpi.read_head_pos(args.movecomp)
         # just get rid of cHPI signals if any:
         raw=mne.chpi.filter_chpi(raw, include_line=True)
         head_pos = None
