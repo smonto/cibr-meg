@@ -203,33 +203,32 @@ for rawfile in file_list:
     ## ---------------------------------------------------------
     ## Do ICA on the preprocessed data, mainly to remove EOG and ECG
     raw.info['bads'] = []
-    ica = ICA(n_components=0.99, method='fastica', random_state=1, max_iter=1000)
+    ica = ICA(n_components=0.99, method='fastica', verbose=True) # random_state=1, max_iter=1000
     ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
                                 ecog=True, stim=False, exclude='bads')
     ica_reject = dict(grad=6000e-13, mag=6e-12)
-    ica.fit(raw.copy().filter(h_freq=None, l_freq=1), picks=ica_picks, reject=ica_reject, decim=2)
+    ica.fit(raw.copy().filter(h_freq=50, l_freq=1), picks=ica_picks, reject=ica_reject, decim=2)
     pyplot_ion()
 
     # Identify ECG components:
     #n_max_ecg = 3  # use max 3 components
     ecg_epochs = create_ecg_epochs(raw, tmin=-1.5, tmax=1.5)
     ecg_epochs.apply_baseline((-0.5, -0.2))
+    ecg_epochs.average().plot_joint(title="Averaged ECG epochs", picks='mag')
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs)
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
-    ecg_epochs.average().plot_joint(title="Averaged ECG epochs", picks='mag')
+    print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
     try:
         if args.debug:
             print("\nShowing all ICA components in debug mode\n")
             ica.plot_components(ch_type='mag', inst=raw, show=False)
         else:
-            ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, show=False)
+            ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, title="Confirm ECG components to be removed", show=False)
     except IndexError as exc:
         raise
     except ValueError as exc:
         print("\nNo ICA components found for ECG.\n")
-    # Ask to verify ECG components
-    print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
     ica.exclude += ecg_inds
 
@@ -237,19 +236,18 @@ for rawfile in file_list:
     #n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
     eog_epochs.apply_baseline((-0.5, -0.2))
+    eog_epochs.average().plot_joint(title="Averaged EOG epochs", picks='mag')
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)\n'.format(len(eog_inds)))
     print('The scores are: {}\n'.format(scores_eog))
-    eog_epochs.average().plot_joint(title="Averaged EOG epochs", picks='mag')
+    print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
     try:
         if not args.debug:
-            ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, show=False)
+            ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, title="Confirm ECG components to be removed", show=False)
     except IndexError as exc:
         raise
     except ValueError as exc:
         print("\nNo ICA components found for EOG.\n")
-    # Ask to verify EOG components
-    print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
     show(block=True)
     ica.exclude += eog_inds
 
