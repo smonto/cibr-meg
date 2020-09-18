@@ -214,7 +214,7 @@ for rawfile in file_list:
     #n_max_ecg = 3  # use max 3 components
     ecg_epochs = create_ecg_epochs(raw, tmin=-1.5, tmax=1.5)
     ecg_epochs.apply_baseline((-0.5, -0.2))
-    ecg_epochs.average().plot_joint(title="Averaged ECG epochs", picks='mag')
+    ecg_epochs.average().plot_joint(title="Averaged ECG epochs", picks='mag', times=0.0)
     ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs)
     print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
     print('The scores are: {}\n'.format(scores_ecg))
@@ -236,7 +236,7 @@ for rawfile in file_list:
     #n_max_eog = 3  # use max 3 components
     eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
     eog_epochs.apply_baseline((-0.5, -0.2))
-    eog_epochs.average().plot_joint(title="Averaged EOG epochs", picks='mag')
+    eog_epochs.average().plot_joint(title="Averaged EOG epochs", picks='mag', times=0.0)
     eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
     print('Found {} EOG component(s)\n'.format(len(eog_inds)))
     print('The scores are: {}\n'.format(scores_eog))
@@ -261,11 +261,14 @@ for rawfile in file_list:
     # Compare changes before/after processing:
     print("\nChecking the data {}:\n".format(str(rawfile)))
     compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)], plot_psd=False)
+
     # Save the final ICA-OTP-SSS pre-processed data:
     #if not args.debug:
     raw.save(result_file, overwrite=True)
     print("\nProcessed and saved file {}\n".format(result_file))
     result_files.append(result_file)
+
+# Combine files if asked:
 if args.combine_files:
     raw = mne.io.read_raw_fif(result_files[0], preload=True)
     for result_file in result_files[1:]:
