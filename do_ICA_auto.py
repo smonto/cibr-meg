@@ -5,7 +5,7 @@ sipemont 190610
 '''
 
 def main(fname):
-	from mne import find_events, pick_types
+	from mne import pick_types
 	from sys import argv
 	from mne.io import read_raw_fif
 	from mne.preprocessing import ICA, create_eog_epochs, create_ecg_epochs
@@ -20,7 +20,7 @@ def main(fname):
 	#%% read and filter data
 	Raw=read_raw_fif(fname, preload=True)
 	Raw.filter(1, 40, fir_design='firwin')
-	Events=find_events(Raw, min_duration=0.003)
+	#Events=find_events(Raw, min_duration=0.003)
 
 	#%% run ICA for automatic ocular & cardiac rejection (plot the rejected topos)
 	picks_ica=pick_types(Raw.info, meg=True)
