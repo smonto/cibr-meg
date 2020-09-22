@@ -10,6 +10,7 @@ def main(fname):
 	from mne.io import read_raw_fif
 	from mne.preprocessing import ICA, create_eog_epochs, create_ecg_epochs
 	import numpy as np
+	import matplotlib.pyplot as plt
 
 	#%% parameters
 	#fname=argv[1]
@@ -35,17 +36,18 @@ def main(fname):
 	print(eog_inds)
 	#ica.plot_overlay(ecg_average, exclude=ecg_inds) # does not work?
 	try:
-	    ica.plot_components(ch_type='mag', picks=ecg_inds)
+	    ica.plot_components(ch_type='mag', picks=ecg_inds, show=False)
 	except IndexError as exc:
 	    pass
 	except ValueError as exc:
 		pass
 	try:
-	    ica.plot_components(ch_type='mag', picks=eog_inds)
+	    ica.plot_components(ch_type='mag', picks=eog_inds, show=False)
 	except IndexError as exc:
 	    pass
 	except ValueError as exc:
 		pass
+	plt.show(block=False)
 	ica.exclude.extend(eog_inds)
 	ica.exclude.extend(ecg_inds)
 	# Save changes to the data:
