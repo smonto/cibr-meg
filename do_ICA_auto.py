@@ -36,13 +36,13 @@ def main(fname):
 	print(eog_inds)
 	#ica.plot_overlay(ecg_average, exclude=ecg_inds) # does not work?
 	try:
-	    ica.plot_components(ch_type='mag', picks=ecg_inds, show=False)
+	    ica.plot_components(ch_type='mag', picks=ecg_inds, title=fname, show=False)
 	except IndexError as exc:
 	    pass
 	except ValueError as exc:
 		pass
 	try:
-	    ica.plot_components(ch_type='mag', picks=eog_inds, show=False)
+	    ica.plot_components(ch_type='mag', picks=eog_inds, title=fname, show=False)
 	except IndexError as exc:
 	    pass
 	except ValueError as exc:
