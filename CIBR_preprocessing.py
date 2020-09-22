@@ -7,10 +7,8 @@ Edited:
 
 To do:
 - ask for other ICA components to be rejected?
-- check thresholds for EOG ECG ICA
-- option to use synthetic channels instead of EOG/ECG channels for ICA?
+- option to use synthetic channels instead of EOG/ECG channels for ICA
 - document more thoroughly what happens...
-- maxfilter-täppä paikalleen => kertoo Meggiellekin että mf tehty
 - miksi helppi näyttää hassusti _ch listan?
 
 --------------------------------------------------------------

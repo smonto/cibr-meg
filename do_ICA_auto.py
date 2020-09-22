@@ -14,7 +14,7 @@ def main(fname):
 	#%% parameters
 	#fname=argv[1]
 	reject_ica={'mag': 6e-12, 'grad': 6e-10}
-	ecg_ch='MEG0141'
+	#ecg_ch='MEG0141'
 
 	#%% read and filter data
 	Raw=read_raw_fif(fname, preload=True)
@@ -25,11 +25,11 @@ def main(fname):
 	picks_ica=pick_types(Raw.info, meg=True)
 	ica = ICA(n_components=0.98, method='fastica')
 	ica.fit(Raw, picks=picks_ica, reject=reject_ica, decim=4)
-	ecg_epochs = create_ecg_epochs(Raw, ch_name=ecg_ch, reject=reject_ica) # ch_name='MEG0111') # find the ECG events automagically
+	ecg_epochs = create_ecg_epochs(Raw, reject=reject_ica) # ch_name='MEG0111') # find the ECG events automagically
 	eog_epochs = create_eog_epochs(Raw, reject=reject_ica) # find the EOG events automagically
 	#ecg_epochs.average().plot_joint(times=0)
 	#eog_epochs.average().plot_joint(times=0)
-	ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, ch_name=ecg_ch, method='ctps', threshold=0.2)
+	ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
 	print(ecg_inds)
 	eog_inds, eog_scores = ica.find_bads_eog(eog_epochs)
 	print(eog_inds)
@@ -45,7 +45,7 @@ def main(fname):
 	except IndexError as exc:
 	    pass
 	except ValueError as exc:
-		pass	
+		pass
 	ica.exclude.extend(eog_inds)
 	ica.exclude.extend(ecg_inds)
 	# Save changes to the data:
