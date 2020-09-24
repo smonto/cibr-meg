@@ -178,11 +178,15 @@ for rawfile in file_list:
     if args.high_freq>0:
         raw.filter(h_freq=args.high_freq, l_freq=None)
         raw.info['lowpass']=args.high_freq
+        raw_orig.filter(h_freq=args.high_freq, l_freq=None)
+        raw_orig.info['lowpass']=args.high_freq
         print("\nLow-pass frequency: {} Hz\n".format(raw.info["lowpass"]))
     # High-pass:
     if args.low_freq>0:
         raw.filter(h_freq=None, l_freq=args.low_freq)
         raw.info['highpass']=args.low_freq
+        raw_orig.filter(h_freq=None, l_freq=args.low_freq)
+        raw_orig.info['highpass']=args.low_freq
         print("\nHigh-pass frequency: {} Hz\n".format(raw.info["highpass"]))
     # Re-sampling :
     if args.sfreq > 0:
@@ -250,7 +254,7 @@ for rawfile in file_list:
         print('The scores are: {}\n'.format(scores_eog))
         print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
         try:
-            ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, title="Confirm ECG components to be removed", show=False)
+            ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, title="Confirm EOG components to be removed", show=False)
         except IndexError as exc:
             raise
         except ValueError as exc:

@@ -1,7 +1,9 @@
 '''
-Script for performing semi-automatic ICA removal of cardiac and ocular artifacts
+Script for performing automatic ICA removal of cardiac and ocular artifacts.
+Reports which components (topomap) were removed.
+Returns both the (filtered) raw data and the ICA model.
 
-sipemont 190610
+sipemont 200924
 '''
 
 def main(fname):
