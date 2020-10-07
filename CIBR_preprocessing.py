@@ -3,10 +3,11 @@ author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-220920
+250920
 
 To do:
-- option to use synthetic channels instead of EOG/ECG channels for ICA
+- option to use synthetic channels instead of EOG/ECG channels for ICA (--synth)
+- option to skip ICA (--noica)
 - document more thoroughly what happens...
 - miksi helppi näyttää hassusti _ch listan?
 
@@ -55,23 +56,6 @@ import sys
 sys.path.append("/opt/tools/cibr-meg/")
 import compare_raws
 
-"""
-from stackexchange, should we need this:
-class Logger(object):
-    def __init__(self):
-        self.terminal = sys.stdout
-        self.log = open("logfile.log", "a")
-    def write(self, message):
-        self.terminal.write(message)
-        self.log.write(message)
-    def flush(self):
-        #this flush method is needed for python 3 compatibility.
-        #this handles the flush command by doing nothing.
-        #you might want to specify some extra behavior here.
-        pass
-sys.stdout = Logger()
-"""
-
 # CIBR cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
 cal = '/neuro/databases/sss/sss_cal.dat'
@@ -79,13 +63,13 @@ cal = '/neuro/databases/sss/sss_cal.dat'
 # Parse command arguments:
 parser = ArgumentParser()
 parser.add_argument("fnames", nargs="+", help="the files to be processed")
+parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list of bad channels in the files")
 parser.add_argument("--headpos", dest='headpos', help="reference head position file")
 parser.add_argument("--movecomp", default=False, dest='movecomp', action='store_const', const=True, help="do movement compensation?")
 parser.add_argument("--fullica", default=False, dest='fullica', action='store_const', const=True, help="show all ICA components")
-parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list of bad channels in the files")
-parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
+parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
 parser.add_argument("--combine", default=False, dest='combine_files', action='store_const', const=True, help="combine all input files")
 parser.add_argument("--debug", default=False, dest='debug', action='store_const', const=True)
 args = parser.parse_args()
