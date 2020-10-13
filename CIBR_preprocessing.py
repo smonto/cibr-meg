@@ -195,7 +195,7 @@ for rawfile in file_list:
         args.fullica=True
 
     ## ---------------------------------------------------------
-    if args.noica=False:
+    if args.noica==False:
         ## Do ICA on the preprocessed data, mainly to remove EOG and ECG
         raw.info['bads'] = []
         ica = ICA(n_components=0.98, method='fastica', verbose=True) # random_state=1, max_iter=1000
