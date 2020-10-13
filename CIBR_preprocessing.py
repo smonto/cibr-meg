@@ -3,11 +3,10 @@ author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-250920
+131020
 
 To do:
 - option to use synthetic channels instead of EOG/ECG channels for ICA (--synth)
-- option to skip ICA (--noica)
 - document more thoroughly what happens...
 - miksi helppi näyttää hassusti _ch listan?
 
@@ -27,6 +26,7 @@ Optional:
 --headpos: reference head position file (or coordinates) for head position transformation
 --movecomp: do movement compensation if cHPI on?
 --fullica: use full ICA analysis without pre-selected EOG/ECG components
+--noica: do not perform any ICA
 --lp: new low-pass frequency (automatic)
 --hp: new high-pass frequency (automatic)
 --fs: new resampling frequency (automatic)
@@ -67,6 +67,7 @@ parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list o
 parser.add_argument("--headpos", dest='headpos', help="reference head position file")
 parser.add_argument("--movecomp", default=False, dest='movecomp', action='store_const', const=True, help="do movement compensation?")
 parser.add_argument("--fullica", default=False, dest='fullica', action='store_const', const=True, help="show all ICA components")
+parser.add_argument("--noica", default=False, dest='noica', action='store_const', const=True, help="do not perform any ICA")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
 parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
@@ -194,63 +195,65 @@ for rawfile in file_list:
         args.fullica=True
 
     ## ---------------------------------------------------------
-    ## Do ICA on the preprocessed data, mainly to remove EOG and ECG
-    raw.info['bads'] = []
-    ica = ICA(n_components=0.98, method='fastica', verbose=True) # random_state=1, max_iter=1000
-    ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
-                                ecog=True, stim=False, exclude='bads')
-    ica_reject = dict(grad=6000e-13, mag=6e-12)
-    ica.fit(raw.copy().filter(h_freq=45, l_freq=1), picks=ica_picks, reject=ica_reject, decim=3)
-    pyplot_ion()
+    if args.noica=False:
+        ## Do ICA on the preprocessed data, mainly to remove EOG and ECG
+        raw.info['bads'] = []
+        ica = ICA(n_components=0.98, method='fastica', verbose=True) # random_state=1, max_iter=1000
+        ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
+                                    ecog=True, stim=False, exclude='bads')
+        ica_reject = dict(grad=6000e-13, mag=6e-12)
+        ica.fit(raw.copy().filter(h_freq=45, l_freq=1), picks=ica_picks, reject=ica_reject, decim=3)
+        pyplot_ion()
 
-    # Show full ICA if requested:
-    if args.fullica:
-        print("\nShowing all ICA components\n")
-        ica.plot_components(ch_type='mag', inst=raw, show=False)
-        show(block=True)
-    else:
-        # Identify ECG components:
-        #n_max_ecg = 3  # use max 3 components
-        ecg_epochs = create_ecg_epochs(raw, tmin=-1.5, tmax=1.5)
-        ecg_epochs.apply_baseline((-0.5, -0.2))
-        ecg_epochs.average().plot_joint(title="Averaged ECG epochs", picks='mag', times=0.0)
-        ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs)
-        ica.exclude += ecg_inds
-        print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
-        print('The scores are: {}\n'.format(scores_ecg))
-        print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
-        try:
-            ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, title="Confirm ECG components to be removed", show=False)
-        except IndexError as exc:
-            raise
-        except ValueError as exc:
-            print("\nNo ICA components found for ECG.\n")
-        show(block=True)
+        # Show full ICA if requested:
+        if args.fullica:
+            print("\nShowing all ICA components\n")
+            ica.plot_components(ch_type='mag', inst=raw, show=False)
+            # add showing evoked time courses - but which epochs? The most common?
+            show(block=True)
+        else:
+            # Identify ECG components:
+            #n_max_ecg = 3  # use max 3 components
+            ecg_epochs = create_ecg_epochs(raw, tmin=-1.5, tmax=1.5)
+            ecg_epochs.apply_baseline((-0.5, -0.2))
+            ecg_epochs.average().plot_joint(title="Averaged ECG epochs", picks='mag', times=0.0)
+            ecg_inds, scores_ecg = ica.find_bads_ecg(ecg_epochs)
+            ica.exclude += ecg_inds
+            print('Found {} ECG component(s)\n'.format(len(ecg_inds)))
+            print('The scores are: {}\n'.format(scores_ecg))
+            print("Click on the ECG component name to turn rejection off/on,\nor topomap to show more properties.")
+            try:
+                ica.plot_components(ch_type='mag', picks=ecg_inds, inst=raw, title="Confirm ECG components to be removed", show=False)
+            except IndexError as exc:
+                raise
+            except ValueError as exc:
+                print("\nNo ICA components found for ECG.\n")
+            show(block=True)
 
-        # Identify EOG components:
-        #n_max_eog = 3  # use max 3 components
-        eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
-        eog_epochs.apply_baseline((-0.5, -0.2))
-        eog_epochs.average().plot_joint(title="Averaged EOG epochs", picks='mag', times=0.0)
-        eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
-        ica.exclude += eog_inds
-        print('Found {} EOG component(s)\n'.format(len(eog_inds)))
-        print('The scores are: {}\n'.format(scores_eog))
-        print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
-        try:
-            ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, title="Confirm EOG components to be removed", show=False)
-        except IndexError as exc:
-            raise
-        except ValueError as exc:
-            print("\nNo ICA components found for EOG.\n")
-        show(block=True)
+            # Identify EOG components:
+            #n_max_eog = 3  # use max 3 components
+            eog_epochs = create_eog_epochs(raw, tmin=-0.5, tmax=0.5)
+            eog_epochs.apply_baseline((-0.5, -0.2))
+            eog_epochs.average().plot_joint(title="Averaged EOG epochs", picks='mag', times=0.0)
+            eog_inds, scores_eog = ica.find_bads_eog(eog_epochs)
+            ica.exclude += eog_inds
+            print('Found {} EOG component(s)\n'.format(len(eog_inds)))
+            print('The scores are: {}\n'.format(scores_eog))
+            print("Click on the EOG component name to turn rejection off/on,\nor topomap to show more properties.")
+            try:
+                ica.plot_components(ch_type='mag', picks=eog_inds, inst=raw, title="Confirm EOG components to be removed", show=False)
+            except IndexError as exc:
+                raise
+            except ValueError as exc:
+                print("\nNo ICA components found for EOG.\n")
+            show(block=True)
 
-    # Apply ICA solution to the data:
-    print("\nExcluding the following ICA components: " + str(ica.exclude))
-    raw = ica.apply(raw)
-    # Save ICA solution:
-    if not args.debug:
-        ica.save(ica_file)
+        # Apply ICA solution to the data:
+        print("\nExcluding the following ICA components: " + str(ica.exclude))
+        raw = ica.apply(raw)
+        # Save ICA solution:
+        if not args.debug:
+            ica.save(ica_file)
 
     # Compare changes before/after processing:
     print("\nChecking the data {}:\n".format(str(rawfile)))
