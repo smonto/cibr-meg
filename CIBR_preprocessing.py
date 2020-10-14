@@ -1,5 +1,5 @@
 """
-author: sipemont (JYU, CIBR)
+Author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
@@ -7,8 +7,8 @@ Edited:
 
 To do:
 - option to use synthetic channels instead of EOG/ECG channels for ICA (--synth)
-- document more thoroughly what happens...
-- miksi helppi näyttää hassusti _ch listan?
+- document more thoroughly what happens
+- miksi helppi näyttää hassusti ch listan?
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -34,11 +34,11 @@ Optional:
 --debug: for testing mode
 
 The final pre-processed data will be saved under the original data in
-folder "preprocessed_<folder_name>". Intermediate results will be saved under
-"tmp" and "ICA" folders.
+folder preprocessed_<folder_name>. Intermediate results will be saved under
+tmp and ICA folders.
 
 Currently, logging is not enabled -- the best way to get processing logs
-is to run the command in terminal and piping the "tee" functionality, like:
+is to run the command in terminal and piping the tee functionality, like:
 python CIBR_preprocessing.py foo.fif | tee log.txt
 """
 
