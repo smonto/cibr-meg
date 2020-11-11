@@ -3,7 +3,7 @@ Author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-131020
+111120
 
 To do:
 - option to use synthetic channels instead of EOG/ECG channels for ICA (--synth)
@@ -59,6 +59,9 @@ import compare_raws
 # CIBR cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
 cal = '/neuro/databases/sss/sss_cal.dat'
+
+ica_low=1
+ica_high=80
 
 # Parse command arguments:
 parser = ArgumentParser()
@@ -202,13 +205,14 @@ for rawfile in file_list:
         ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
                                     ecog=True, stim=False, exclude='bads')
         ica_reject = dict(grad=6000e-13, mag=6e-12)
-        ica.fit(raw.copy().filter(h_freq=45, l_freq=1), picks=ica_picks, reject=ica_reject, decim=3)
+        ica.fit(raw.copy().filter(h_freq=ica_high, l_freq=ica_low), picks=ica_picks, reject=ica_reject, decim=3)
         pyplot_ion()
 
         # Show full ICA if requested:
         if args.fullica:
             print("\nShowing all ICA components\n")
             ica.plot_components(ch_type='mag', inst=raw, show=False)
+            ica.plot_sources(raw, show=False)
             # add showing evoked time courses - but which epochs? The most common?
             show(block=True)
         else:
