@@ -60,6 +60,7 @@ import compare_raws
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
 cal = '/neuro/databases/sss/sss_cal.dat'
 
+# Filtering for ICA:
 ica_low=1
 ica_high=80
 
@@ -71,6 +72,7 @@ parser.add_argument("--headpos", dest='headpos', help="reference head position f
 parser.add_argument("--movecomp", default=False, dest='movecomp', action='store_const', const=True, help="do movement compensation?")
 parser.add_argument("--fullica", default=False, dest='fullica', action='store_const', const=True, help="show all ICA components")
 parser.add_argument("--noica", default=False, dest='noica', action='store_const', const=True, help="do not perform any ICA")
+parser.add_argument("--synthica", default=False, dest='synthica', action='store_const', const=True, help="reconstruct EOG/EEG from MEG for ICA")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
 parser.add_argument("--fs", default=0, dest='sfreq', type=int, help="new sampling frequency")
@@ -199,11 +201,12 @@ for rawfile in file_list:
 
     ## ---------------------------------------------------------
     if args.noica==False:
-        ## Do ICA on the preprocessed data, mainly to remove EOG and ECG
+        ## Do ICA on the preprocessed data, mainly to remove EOG and ECG artefacts
         raw.info['bads'] = []
+        # Remove EOG and ECG channels if synthetic MEG signals asked for:
+        ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=not(args.synthica),
+                                    ecog=not(args.synthica), stim=False, exclude='bads')
         ica = ICA(n_components=0.98, method='fastica', verbose=True) # random_state=1, max_iter=1000
-        ica_picks = mne.pick_types(raw.info, meg=True, eeg=False, eog=True,
-                                    ecog=True, stim=False, exclude='bads')
         ica_reject = dict(grad=6000e-13, mag=6e-12)
         ica.fit(raw.copy().filter(h_freq=ica_high, l_freq=ica_low), picks=ica_picks, reject=ica_reject, decim=3)
         pyplot_ion()
