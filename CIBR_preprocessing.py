@@ -109,7 +109,7 @@ for rawfile in file_list:
     tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
     result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
     if args.combine_files:
-        combined_filename = target_dir + 'OTP_TSSS_ICA_' + 'combined' + '.fif'
+        combined_filename = target_dir + 'OTP_TSSS_ICA' + '_combined' + '.fif'
     # Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     if args.debug:
