@@ -16,11 +16,11 @@ It consist of the following main steps:
 - oversampled temporal projection (OTP)
 - Maxfilter with temporal signal subspace separation (SSS + TSSS)
 - independent component analysis (ICA)
-with possible head position tasks.
+plus possible head position tasks.
 
 Expected arguments:
-- files to be processed (in current directory; wildcards accepted)
-Optional:
+1. File names to be processed (in current directory; wildcards accepted)
+Optional arguments:
 --bad: bad channel names, separated by space (automatic if not given)
 --headpos: reference head position file (or coordinates) for head position transformation
 --movecomp: do movement compensation if cHPI on?
@@ -35,7 +35,7 @@ Optional:
 
 The final pre-processed data will be saved under the original data in
 folder preprocessed_<folder_name>. Intermediate results will be saved under
-tmp and ICA folders.
+"tmp" and "ICA" folders.
 
 Currently, logging is not enabled -- the best way to get processing logs
 is to run the command in terminal and piping the tee functionality, like:
@@ -44,7 +44,6 @@ python CIBR_preprocessing.py foo.fif | tee log.txt
 
 import mne
 import os
-#from glob import glob
 from mne.preprocessing import create_ecg_epochs, create_eog_epochs, ICA
 from argparse import ArgumentParser
 from matplotlib.pyplot import show
@@ -56,7 +55,7 @@ import sys
 sys.path.append("/opt/tools/cibr-meg/")
 import compare_raws
 
-# CIBR cross-talk correction and calibration files for MaxFilter:
+# CIBR MEG cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
 cal = '/neuro/databases/sss/sss_cal.dat'
 
@@ -82,9 +81,8 @@ args = parser.parse_args()
 
 ## ---------------------------------------------------------
 ## Find the files to be processed and build paths:
-#file_list = [glob(f) for f in args.fnames]
 file_list = args.fnames
-# Order the files:
+# Ordering the files:
 file_list = tuple(Tcl().call('lsort', '-dict', file_list))
 print("Found files (in order): {}".format(file_list))
 proceed = input("Press n if this is not ok, enter to accept.")
@@ -118,7 +116,7 @@ for rawfile in file_list:
     raw_orig = deepcopy(raw).load_data().apply_proj()
     # Fix MAG coil type codes to avoid warning messages:
     raw.fix_mag_coil_types()
-    # Bad channels search using Maxwell filtering:
+    # Bad channels search using Maxwell filtering, recommended 40 Hz LPF:
     if args.bad_chs==[]:
         print("\nLooking for bad channels...\n")
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
@@ -144,12 +142,11 @@ for rawfile in file_list:
     ## ---------------------------------------------------------
     ## Prepare head movement compensation
     if args.movecomp==True:
-        # Load cHPI and head movement:
+        # Load cHPI and head movement (default MEGIN parameter values?):
         chpi_amp = mne.chpi.compute_chpi_amplitudes(raw, t_step_min=0.01, t_window=0.2)
         chpi_locs = mne.chpi.compute_chpi_locs(raw.info, chpi_amp, t_step_max=0.5, too_close='raise', adjust_dig=True)
         head_pos = mne.chpi.compute_head_pos(raw.info, chpi_locs, dist_limit=0.005, gof_limit=0.95, adjust_dig=True)
     else:
-        #args.movecomp = mne.chpi.read_head_pos(args.movecomp)
         # just get rid of cHPI signals if any:
         raw=mne.chpi.filter_chpi(raw, include_line=True)
         head_pos = None
@@ -157,7 +154,7 @@ for rawfile in file_list:
     ## ---------------------------------------------------------
     ## Apply TSSS on raw data:
     raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
-                st_duration=10, st_correlation=0.999, coord_frame="head",
+                st_duration=10, st_correlation=0.99, coord_frame="head",
                 destination=destination, head_pos=head_pos)
 
     ## ---------------------------------------------------------
