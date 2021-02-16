@@ -6,7 +6,6 @@ Edited:
 111120
 
 To do:
-- option to use synthetic channels instead of EOG/ECG channels for ICA (--synth)
 - document more thoroughly what happens
 - miksi helppi näyttää hassusti ch listan?
 
@@ -27,6 +26,7 @@ Optional:
 --movecomp: do movement compensation if cHPI on?
 --fullica: use full ICA analysis without pre-selected EOG/ECG components
 --noica: do not perform any ICA
+--synthica: use synthetic channels for EOG and ECG
 --lp: new low-pass frequency (automatic)
 --hp: new high-pass frequency (automatic)
 --fs: new resampling frequency (automatic)
