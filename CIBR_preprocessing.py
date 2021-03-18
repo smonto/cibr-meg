@@ -33,12 +33,11 @@ Optional arguments:
 --combine: combine input files to a single output
 --debug: for testing mode
 
-The final pre-processed data will be saved under the original data in
-folder preprocessed_<folder_name>. Intermediate results will be saved under
-"tmp" and "ICA" folders.
+The final pre-processed data will be saved in folder preprocessed_<folder_name>.
+Intermediate results will be saved under "tmp" and "ICA" folders.
 
-Currently, logging is not enabled -- the best way to get processing logs
-is to run the command in terminal and piping the tee functionality, like:
+Currently, output logging is not enabled -- the best way to get processing logs
+is to run the command in terminal and piping the "tee" functionality, like:
 python CIBR_preprocessing.py foo.fif | tee log.txt
 """
 
@@ -85,12 +84,13 @@ args = parser.parse_args()
 file_list = args.fnames
 # Ordering the files:
 file_list = tuple(Tcl().call('lsort', '-dict', file_list))
+target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
 print("Found files (in order): {}".format(file_list))
-proceed = input("Press n if this is not ok, enter to accept.")
+print("Results will be written in: {}".format(target_dir))
+proceed = input("Press n if these are not ok, or hit enter to accept.")
 if proceed=="n":
     print("Stopping...")
     sys.exit(0)
-target_dir = os.path.join(os.getcwd(), 'preprocessed_' + os.getcwd().split("/")[-1] + '/')
 os.makedirs(target_dir, exist_ok=True)
 path_to_tmp_files = os.path.join(target_dir, 'tmp/')
 os.makedirs(path_to_tmp_files, exist_ok=True)
