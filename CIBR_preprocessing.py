@@ -102,8 +102,9 @@ result_files=list() # collects result file names
 ## Start processing loop for each file
 for rawfile in file_list:
     # Set up names:
-    fs = rawfile.split(".")
-    raw_name = fs[0] + '.fif'
+    fs = os.path.split(rawfile)
+    fs = fs.split(".")
+    #raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
     tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
     result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
