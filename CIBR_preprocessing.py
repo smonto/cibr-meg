@@ -3,11 +3,10 @@ Author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-111120
+180321
 
 To do:
 - document more thoroughly what happens
-- miksi helppi näyttää hassusti ch listan?
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -23,14 +22,15 @@ Expected arguments:
 Optional arguments:
 --bad: bad channel names, separated by space (automatic if not given)
 --headpos: reference head position file (or coordinates) for head position transformation
---movecomp: do movement compensation if cHPI on?
---fullica: use full ICA analysis without pre-selected EOG/ECG components
+--movecomp: do movement compensation if cHPI on
+--fullica: perform full ICA analysis, without pre-selected EOG/ECG components
 --noica: do not perform any ICA
---synthica: use synthetic channels for EOG and ECG
---lp: new low-pass frequency (automatic)
---hp: new high-pass frequency (automatic)
---fs: new resampling frequency (automatic)
---combine: combine input files to single output?
+--nootp: do not perform OTP
+--synthica: use synthetic data instead of EOG and ECG channels
+--lp: low-pass frequency
+--hp: high-pass frequency
+--fs: resampling frequency
+--combine: combine input files to a single output
 --debug: for testing mode
 
 The final pre-processed data will be saved under the original data in
@@ -59,7 +59,7 @@ import compare_raws
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
 cal = '/neuro/databases/sss/sss_cal.dat'
 
-# Filtering for ICA:
+# Frequencies for filtering prior to ICA:
 ica_low=1
 ica_high=80
 
@@ -71,6 +71,7 @@ parser.add_argument("--headpos", dest='headpos', help="reference head position f
 parser.add_argument("--movecomp", default=False, dest='movecomp', action='store_const', const=True, help="do movement compensation?")
 parser.add_argument("--fullica", default=False, dest='fullica', action='store_const', const=True, help="show all ICA components")
 parser.add_argument("--noica", default=False, dest='noica', action='store_const', const=True, help="do not perform any ICA")
+parser.add_argument("--nootp", default=False, dest='nootp', action='store_const', const=True, help="do not perform OTP")
 parser.add_argument("--synthica", default=False, dest='synthica', action='store_const', const=True, help="reconstruct EOG/EEG from MEG for ICA")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
@@ -128,7 +129,7 @@ for rawfile in file_list:
 
     ## ---------------------------------------------------------
     ## Application of OTP on raw data:
-    if not args.debug:
+    if (not args.debug) and (not args.nootp):
         raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
 
     ## ---------------------------------------------------------
