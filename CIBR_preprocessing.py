@@ -149,7 +149,7 @@ for rawfile in file_list:
         head_pos = mne.chpi.compute_head_pos(raw.info, chpi_locs, dist_limit=0.005, gof_limit=0.95, adjust_dig=True)
     else:
         # just get rid of cHPI signals if any:
-        raw=mne.chpi.filter_chpi(raw, include_line=True)
+        raw=mne.chpi.filter_chpi(raw, include_line = (raw.info["line_freq"] is not None))
         head_pos = None
 
     ## ---------------------------------------------------------
