@@ -7,6 +7,7 @@ Edited:
 
 To do:
 - document more thoroughly what happens
+- add no_tsss option
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -103,7 +104,7 @@ result_files=list() # collects result file names
 for rawfile in file_list:
     # Set up names:
     fs = os.path.split(rawfile)
-    fs = fs.split(".")
+    fs = fs[1].split(".")
     #raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
     tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
