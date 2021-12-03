@@ -3,11 +3,10 @@ Author: sipemont (JYU, CIBR)
 Thanks to Anna-Maria Alexandrou and Jan Kujala
 
 Edited:
-180321
+031221
 
 To do:
 - document more thoroughly what happens
-- add no_tsss option
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -20,13 +19,15 @@ plus possible head position tasks.
 
 Expected arguments:
 1. File names to be processed (in current directory; wildcards accepted)
+
 Optional arguments:
---bad: bad channel names, separated by space (automatic if not given)
---headpos: reference head position file (or coordinates) for head position transformation
---movecomp: do movement compensation if cHPI on
---fullica: perform full ICA analysis, without pre-selected EOG/ECG components
---noica: do not perform any ICA
---nootp: do not perform OTP
+--bad: bad channel names, separated by space (automatic detection if not given)
+--headpos: reference head position file or coordinates for head position transformation
+--movecomp: do movement compensation (if cHPI on)
+--fullica: display full ICA analysis, without pre-selected EOG/ECG components
+--no_tsss: do not perform TSSS, only basic SSS
+--no_ica: do not perform any ICA
+--no_otp: do not perform OTP
 --synthica: use synthetic data instead of EOG and ECG channels
 --lp: low-pass frequency
 --hp: high-pass frequency
@@ -36,6 +37,7 @@ Optional arguments:
 
 The final pre-processed data will be saved in folder preprocessed_<folder_name>.
 Intermediate results will be saved under "tmp" and "ICA" folders.
+It is recommended to run only for one subject at time.
 
 Currently, output logging is not enabled -- the best way to get processing logs
 is to run the command in terminal and piping the "tee" functionality, like:
@@ -51,9 +53,11 @@ from matplotlib.pyplot import ion as pyplot_ion
 from copy import deepcopy
 #from collections import OrderedDict
 from tkinter import Tcl
+import compare_raws
 import sys
 sys.path.append("/opt/tools/cibr-meg/")
-import compare_raws
+
+pyplot_ion
 
 # CIBR MEG cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
@@ -70,8 +74,9 @@ parser.add_argument("--bad", default=[], nargs='*', dest='bad_chs', help="list o
 parser.add_argument("--headpos", dest='headpos', help="reference head position file")
 parser.add_argument("--movecomp", default=False, dest='movecomp', action='store_const', const=True, help="do movement compensation?")
 parser.add_argument("--fullica", default=False, dest='fullica', action='store_const', const=True, help="show all ICA components")
-parser.add_argument("--noica", default=False, dest='noica', action='store_const', const=True, help="do not perform any ICA")
-parser.add_argument("--nootp", default=False, dest='nootp', action='store_const', const=True, help="do not perform OTP")
+parser.add_argument("--no_tsss", default=False, dest='no_tsss', action='store_const', const=True, help="do not perform TSSS")
+parser.add_argument("--no_ica", default=False, dest='no_ica', action='store_const', const=True, help="do not perform any ICA")
+parser.add_argument("--no_otp", default=False, dest='no_otp', action='store_const', const=True, help="do not perform OTP")
 parser.add_argument("--synthica", default=False, dest='synthica', action='store_const', const=True, help="reconstruct EOG/EEG from MEG for ICA")
 parser.add_argument("--lp", default=0, dest='high_freq', type=float, help="low-pass frequency")
 parser.add_argument("--hp", default=0, dest='low_freq', type=float, help="high-pass frequency")
@@ -107,7 +112,7 @@ for rawfile in file_list:
     fs = fs[1].split(".")
     #raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
-    tmp_file = path_to_tmp_files + 'OTP_TSSS_' + fs[0] + '.fif'
+    tmp_file = path_to_tmp_files + not(args.no_otp)*'OTP_' + 'TSSS_' + fs[0] + '.fif'
     result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
     if args.combine_files:
         combined_filename = target_dir + 'OTP_TSSS_ICA' + '_combined' + '.fif'
@@ -131,7 +136,7 @@ for rawfile in file_list:
 
     ## ---------------------------------------------------------
     ## Application of OTP on raw data:
-    if (not args.debug) and (not args.nootp):
+    if (not args.debug) and (not args.no_otp):
         raw = mne.preprocessing.oversampled_temporal_projection(raw, duration=10.0)
 
     ## ---------------------------------------------------------
@@ -203,7 +208,7 @@ for rawfile in file_list:
         args.fullica=True
 
     ## ---------------------------------------------------------
-    if args.noica==False:
+    if args.no_ica==False:
         ## Do ICA on the preprocessed data, mainly to remove EOG and ECG artefacts
         raw.info['bads'] = []
         # Remove EOG and ECG channels if synthetic MEG signals asked for:
