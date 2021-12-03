@@ -7,6 +7,8 @@ Edited:
 
 To do:
 - document more thoroughly what happens
+- test headpos arguments
+- test how automatic file combination works (*-1.fif, *-2.fif, etc)
 
 --------------------------------------------------------------
 This script is intended for MEG data pre-processing (cleaning).
@@ -22,7 +24,7 @@ Expected arguments:
 
 Optional arguments:
 --bad: bad channel names, separated by space (automatic detection if not given)
---headpos: reference head position file or coordinates for head position transformation
+--headpos: reference head position (file or coordinates or "default") or None (for no transform)
 --movecomp: do movement compensation (if cHPI on)
 --fullica: display full ICA analysis, without pre-selected EOG/ECG components
 --no_tsss: do not perform TSSS, only basic SSS
@@ -32,7 +34,7 @@ Optional arguments:
 --lp: low-pass frequency
 --hp: high-pass frequency
 --fs: resampling frequency
---combine: combine input files to a single output
+--combine: combine input files to a single output (check the reported order!)
 --debug: for testing mode
 
 The final pre-processed data will be saved in folder preprocessed_<folder_name>.
@@ -58,6 +60,7 @@ import sys
 sys.path.append("/opt/tools/cibr-meg/")
 
 pyplot_ion
+os.nice(20)
 
 # CIBR MEG cross-talk correction and calibration files for MaxFilter:
 ctc = '/neuro/databases/ctc/ct_sparse.fif'
@@ -112,10 +115,10 @@ for rawfile in file_list:
     fs = fs[1].split(".")
     #raw_name = fs[0] + '.fif'
     ica_file = path_to_ICA + fs[0] + '_ICA.fif';
-    tmp_file = path_to_tmp_files + not(args.no_otp)*'OTP_' + 'TSSS_' + fs[0] + '.fif'
-    result_file = target_dir + 'OTP_TSSS_ICA_' + fs[0] + '.fif'
+    tmp_file = path_to_tmp_files + '_' if args.no_otp else 'OTP_' + 'TSSS_' + fs[0] + '.fif'
+    result_file = target_dir + '_' if args.no_otp else 'OTP_' + 'TSSS' + '_' if no_ica else '_ICA_' + fs[0] + '.fif'
     if args.combine_files:
-        combined_filename = target_dir + 'OTP_TSSS_ICA' + '_combined' + '.fif'
+        combined_filename = target_dir + '_' if args.no_otp else 'OTP_' + 'TSSS' + '_' if no_ica else '_ICA_' + 'combined' + '.fif'
     # Read from file:
     raw = mne.io.read_raw_fif(rawfile, preload=True)
     if args.debug:
@@ -126,9 +129,9 @@ for rawfile in file_list:
     raw.fix_mag_coil_types()
     # Bad channels search using Maxwell filtering, recommended 40 Hz LPF:
     if args.bad_chs==[]:
-        print("\nLooking for bad channels...\n")
+        print("\nLooking for bad channels...using initial 2 mins of data\n")
         noisy_chs, flat_chs = mne.preprocessing.find_bad_channels_maxwell(
-                raw.copy().filter(None, 40), origin='auto', calibration=cal,
+                raw.copy().crop(10,130).filter(None, 40), origin='auto', calibration=cal,
                 cross_talk=ctc, skip_by_annotation=['edge', 'bad_acq_skip'])
         args.bad_chs = noisy_chs + flat_chs
     raw.info['bads'].extend(args.bad_chs)
@@ -146,11 +149,13 @@ for rawfile in file_list:
         destination=headpos_info['dev_head_t']['trans'][0:3,3]
     except:
         destination=args.headpos
+    if destination == "default":
+        destination = (0.0, 0.0, 0.04)
 
     ## ---------------------------------------------------------
     ## Prepare head movement compensation
     if args.movecomp==True:
-        # Load cHPI and head movement (default MEGIN parameter values?):
+        # Load cHPI and head movement (default MEGIN parameter values):
         chpi_amp = mne.chpi.compute_chpi_amplitudes(raw, t_step_min=0.01, t_window=0.2)
         chpi_locs = mne.chpi.compute_chpi_locs(raw.info, chpi_amp, t_step_max=0.5, too_close='raise', adjust_dig=True)
         head_pos = mne.chpi.compute_head_pos(raw.info, chpi_locs, dist_limit=0.005, gof_limit=0.95, adjust_dig=True)
@@ -164,9 +169,14 @@ for rawfile in file_list:
 
     ## ---------------------------------------------------------
     ## Apply TSSS on raw data:
-    raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
-                st_duration=10, st_correlation=0.99, coord_frame="head",
-                destination=destination, head_pos=head_pos)
+    if args.no_tsss:
+        raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
+            st_duration=None, coord_frame="head",
+            destination=destination, head_pos=head_pos)
+    else:
+        raw=mne.preprocessing.maxwell_filter(raw, cross_talk=ctc, calibration=cal,
+            st_duration=10, st_correlation=0.98, coord_frame="head",
+            destination=destination, head_pos=head_pos)
 
     ## ---------------------------------------------------------
     ## Filter and resample the raw data as needed:
@@ -208,7 +218,7 @@ for rawfile in file_list:
         args.fullica=True
 
     ## ---------------------------------------------------------
-    if args.no_ica==False:
+    if args.no_ica == False:
         ## Do ICA on the preprocessed data, mainly to remove EOG and ECG artefacts
         raw.info['bads'] = []
         # Remove EOG and ECG channels if synthetic MEG signals asked for:
@@ -272,7 +282,10 @@ for rawfile in file_list:
 
     # Compare changes before/after processing:
     print("\nChecking the data {}:\n".format(str(rawfile)))
-    compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)], plot_psd=False)
+    try:
+        compare_raws.main([raw_orig.pick_types(meg=True), raw.copy().pick_types(meg=True)], plot_psd=False)
+    except:
+        print("Could not compare data.\n - Maybe compare_raws.py not found?")
 
     # Save the final ICA-OTP-SSS pre-processed data:
     #if not args.debug:
